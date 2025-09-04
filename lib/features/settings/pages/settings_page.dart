@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class AutomationPage extends StatelessWidget {
-  const AutomationPage({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('Automation Page'),
+      child: Text('Settings Page'),
     );
   }
 }
