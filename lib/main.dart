@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/device_provider.dart';
+import 'core/providers/automation_provider.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
@@ -19,6 +20,7 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
+        ChangeNotifierProvider(create: (_) => AutomationProvider()),
         // Add more providers for other features as needed
       ],
       child: MaterialApp(
