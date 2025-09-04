@@ -248,7 +248,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedActionDeviceId.isEmpty ? null : _selectedActionDeviceId,
+              initialValue: (_selectedActionDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedActionDeviceId))
+                  ? _selectedActionDeviceId
+                  : null,
               decoration: const InputDecoration(
                 labelText: 'Target Device',
                 border: OutlineInputBorder(),
@@ -261,7 +263,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedActionDeviceId = value!;
+                  _selectedActionDeviceId = value ?? '';
                 });
               },
             ),
