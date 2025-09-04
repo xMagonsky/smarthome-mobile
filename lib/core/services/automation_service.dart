@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:logger/logger.dart';
 import '../../features/automation/models/automation.dart';
 import '../providers/device_provider.dart';
 import '../providers/automation_provider.dart';
@@ -6,6 +7,7 @@ import '../providers/automation_provider.dart';
 class AutomationService {
   final DeviceProvider deviceProvider;
   final AutomationProvider automationProvider;
+  final Logger _logger = Logger();
   Timer? _timer;
 
   AutomationService({
@@ -122,8 +124,8 @@ class AutomationService {
         }
         break;
       case 'notification':
-        // For now, just print notification. In real app, show notification
-        print('NOTIFICATION: ${action.value}');
+        // For now, just log notification. In real app, show notification
+        _logger.i('NOTIFICATION: ${action.value}');
         break;
     }
   }
