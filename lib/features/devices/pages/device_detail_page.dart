@@ -36,7 +36,6 @@ class DeviceDetailPage extends StatelessWidget {
               },
             ),
             const Text('Toggle On/Off'),
-            // Add more controls (e.g., sliders for brightness) in future
           ],
         ),
       ),
