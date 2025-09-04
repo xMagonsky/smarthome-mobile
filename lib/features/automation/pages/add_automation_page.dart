@@ -120,7 +120,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               ),
             if (_selectedTriggerType == 'device')
               DropdownButtonFormField<String>(
-                value: (_selectedDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedDeviceId))
+                initialValue: (_selectedDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedDeviceId))
                     ? _selectedDeviceId
                     : null,
                 decoration: const InputDecoration(
