@@ -24,29 +24,4 @@ class SettingsProvider extends ChangeNotifier {
     _settings = _settings.copyWith(email: email);
     notifyListeners();
   }
-
-  void toggleNotifications(bool enabled) {
-    _settings = _settings.copyWith(notificationsEnabled: enabled);
-    notifyListeners();
-  }
-
-  void toggleDarkMode(bool enabled) {
-    _settings = _settings.copyWith(darkModeEnabled: enabled);
-    notifyListeners();
-  }
-
-  void updateLanguage(String language) {
-    _settings = _settings.copyWith(language: language);
-    notifyListeners();
-  }
-
-  void toggleAutoUpdate(bool enabled) {
-    _settings = _settings.copyWith(autoUpdateEnabled: enabled);
-    notifyListeners();
-  }
-
-  void toggleLocationServices(bool enabled) {
-    _settings = _settings.copyWith(locationServicesEnabled: enabled);
-    notifyListeners();
-  }
 }

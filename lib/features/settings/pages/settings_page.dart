@@ -1,15 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/settings_provider.dart';
-import 'profile_settings_page.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  bool _isEditing = false;
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+    _nameController = TextEditingController(text: settingsProvider.settings.userName);
+    _emailController = TextEditingController(text: settingsProvider.settings.email);
+  }
 
   @override
   Widget build(BuildContext context) {
     final settingsProvider = Provider.of<SettingsProvider>(context);
 
+    if (_isEditing) {
+      return _buildEditProfileView(settingsProvider);
+    }
+
+    return _buildMainView(settingsProvider);
+  }
+
+  Widget _buildMainView(SettingsProvider settingsProvider) {
     return Column(
       children: [
         // User Profile Header
@@ -54,14 +79,7 @@ class SettingsPage extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ProfileSettingsPage(),
-                    ),
-                  );
-                },
+                onPressed: () => setState(() => _isEditing = true),
               ),
             ],
           ),
@@ -76,14 +94,7 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('Edit Profile'),
                 subtitle: const Text('Change name, email and password'),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const ProfileSettingsPage(),
-                    ),
-                  );
-                },
+                onTap: () => setState(() => _isEditing = true),
               ),
               const Divider(),
               ListTile(
@@ -96,6 +107,107 @@ class SettingsPage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildEditProfileView(SettingsProvider settingsProvider) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => setState(() => _isEditing = false),
+        ),
+        actions: [
+          TextButton(
+            onPressed: _saveProfile,
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const SizedBox(height: 20),
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundColor: Theme.of(context).primaryColor,
+                child: Text(
+                  settingsProvider.settings.userName[0].toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 36,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Full Name',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
+                }
+                if (!value.contains('@')) {
+                  return 'Please enter a valid email';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                // Handle password change
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Password change coming soon!')),
+                );
+              },
+              icon: const Icon(Icons.lock),
+              label: const Text('Change Password'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _saveProfile() {
+    if (_formKey.currentState!.validate()) {
+      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      settingsProvider.updateUserName(_nameController.text);
+      settingsProvider.updateEmail(_emailController.text);
+      setState(() => _isEditing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully')),
+      );
+    }
   }
 
   void _showSignOutDialog(BuildContext context) {
@@ -121,5 +233,12 @@ class SettingsPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
   }
 }
