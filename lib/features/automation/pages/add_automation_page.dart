@@ -29,11 +29,18 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     if (widget.automation != null) {
       _nameController.text = widget.automation!.name;
       _selectedTriggerType = widget.automation!.trigger.type;
-      _selectedDeviceId = widget.automation!.trigger.value;
       _selectedActionType = widget.automation!.action.type;
       _selectedActionDeviceId = widget.automation!.action.deviceId;
-      _timeValue = widget.automation!.trigger.value;
       _actionValue = widget.automation!.action.value == 'true';
+
+      // Set values based on trigger type
+      if (_selectedTriggerType == 'time') {
+        _timeValue = widget.automation!.trigger.value;
+        _selectedDeviceId = '';
+      } else if (_selectedTriggerType == 'device') {
+        _selectedDeviceId = widget.automation!.trigger.value;
+        _timeValue = '18:00'; // Default time value
+      }
     }
   }
 
@@ -89,6 +96,13 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               onChanged: (value) {
                 setState(() {
                   _selectedTriggerType = value!;
+                  // Reset dependent values when trigger type changes
+                  if (value == 'time') {
+                    _selectedDeviceId = '';
+                  } else if (value == 'device') {
+                    _timeValue = '18:00'; // Reset to default
+                    _selectedDeviceId = ''; // Reset device selection
+                  }
                 });
               },
             ),
@@ -106,7 +120,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               ),
             if (_selectedTriggerType == 'device')
               DropdownButtonFormField<String>(
-                initialValue: _selectedDeviceId.isEmpty ? null : _selectedDeviceId,
+                value: (_selectedDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedDeviceId))
+                    ? _selectedDeviceId
+                    : null,
                 decoration: const InputDecoration(
                   labelText: 'Device',
                   border: OutlineInputBorder(),
@@ -119,7 +135,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedDeviceId = value!;
+                    _selectedDeviceId = value ?? '';
                   });
                 },
               ),
