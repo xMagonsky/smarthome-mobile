@@ -18,10 +18,13 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
   final _nameController = TextEditingController();
   String _selectedTriggerType = 'time';
   String _selectedDeviceId = '';
+  String _selectedSensorType = 'temperature';
   String _selectedActionType = 'device_toggle';
   String _selectedActionDeviceId = '';
   String _timeValue = '18:00';
-  bool _actionValue = true;
+  String _sensorValue = '25';
+  String _sensorOperator = '>';
+  dynamic _actionValue = true;
 
   @override
   void initState() {
@@ -92,6 +95,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               items: const [
                 DropdownMenuItem(value: 'time', child: Text('Time')),
                 DropdownMenuItem(value: 'device', child: Text('Device State')),
+                DropdownMenuItem(value: 'sensor', child: Text('Sensor Value')),
               ],
               onChanged: (value) {
                 setState(() {
@@ -139,6 +143,90 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                   });
                 },
               ),
+            if (_selectedTriggerType == 'sensor') ...[
+              DropdownButtonFormField<String>(
+                initialValue: (_selectedDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedDeviceId))
+                    ? _selectedDeviceId
+                    : null,
+                decoration: const InputDecoration(
+                  labelText: 'Sensor Device',
+                  border: OutlineInputBorder(),
+                ),
+                items: deviceProvider.devices
+                    .where((device) => device.sensorValues != null && device.sensorValues!.isNotEmpty)
+                    .map((device) {
+                  return DropdownMenuItem(
+                    value: device.id,
+                    child: Text(device.name),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedDeviceId = value ?? '';
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedSensorType,
+                decoration: const InputDecoration(
+                  labelText: 'Sensor Type',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'temperature', child: Text('Temperature (°C)')),
+                  DropdownMenuItem(value: 'humidity', child: Text('Humidity (%)')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedSensorType = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _sensorOperator,
+                      decoration: const InputDecoration(
+                        labelText: 'Operator',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: '>', child: Text('>')),
+                        DropdownMenuItem(value: '<', child: Text('<')),
+                        DropdownMenuItem(value: '>=', child: Text('≥')),
+                        DropdownMenuItem(value: '<=', child: Text('≤')),
+                        DropdownMenuItem(value: '==', child: Text('=')),
+                        DropdownMenuItem(value: '!=', child: Text('≠')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _sensorOperator = value!;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 3,
+                    child: TextFormField(
+                      initialValue: _sensorValue,
+                      decoration: const InputDecoration(
+                        labelText: 'Value',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        _sensorValue = value;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 16),
             const Text('Action', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             DropdownButtonFormField<String>(
@@ -149,6 +237,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               ),
               items: const [
                 DropdownMenuItem(value: 'device_toggle', child: Text('Toggle Device')),
+                DropdownMenuItem(value: 'device_set_value', child: Text('Set Device Value')),
+                DropdownMenuItem(value: 'notification', child: Text('Send Notification')),
               ],
               onChanged: (value) {
                 setState(() {
@@ -186,6 +276,31 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                   });
                 },
               ),
+            if (_selectedActionType == 'device_set_value')
+              TextFormField(
+                initialValue: _actionValue.toString(),
+                decoration: const InputDecoration(
+                  labelText: 'Value',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  // For now, just store as string, can be parsed later based on device type
+                  _actionValue = value.isNotEmpty ? double.tryParse(value) ?? true : true;
+                },
+              ),
+            if (_selectedActionType == 'notification')
+              TextFormField(
+                initialValue: _actionValue.toString(),
+                decoration: const InputDecoration(
+                  labelText: 'Notification Message',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                onChanged: (value) {
+                  _actionValue = value;
+                },
+              ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saveAutomation,
@@ -206,17 +321,28 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
       final trigger = Trigger(
         type: _selectedTriggerType,
-        value: _selectedTriggerType == 'time' ? _timeValue : _selectedDeviceId,
+        value: _selectedTriggerType == 'time'
+            ? _timeValue
+            : _selectedTriggerType == 'sensor'
+                ? _selectedDeviceId
+                : _selectedDeviceId,
+        sensorType: _selectedTriggerType == 'sensor' ? _selectedSensorType : '',
         description: _selectedTriggerType == 'time'
             ? 'Daily at $_timeValue'
-            : 'When device state changes',
+            : _selectedTriggerType == 'sensor'
+                ? 'When $_selectedSensorType $_sensorOperator $_sensorValue'
+                : 'When device state changes',
       );
 
       final action = AutomationAction(
         type: _selectedActionType,
-        deviceId: _selectedActionDeviceId,
-        value: _actionValue.toString(),
-        description: _actionValue ? 'Turn on device' : 'Turn off device',
+        deviceId: _selectedActionType == 'notification' ? '' : _selectedActionDeviceId,
+        value: _actionValue,
+        description: _selectedActionType == 'device_toggle'
+            ? (_actionValue ? 'Turn on device' : 'Turn off device')
+            : _selectedActionType == 'device_set_value'
+                ? 'Set device value to $_actionValue'
+                : 'Send notification: $_actionValue',
       );
 
       if (widget.automation == null) {

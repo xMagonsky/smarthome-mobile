@@ -17,27 +17,31 @@ class Automation {
 }
 
 class Trigger {
-  final String type; // 'time', 'device', 'sensor'
-  final String value; // czas w formacie HH:MM, device id, sensor id
+  final String type; // 'time', 'device', 'sensor', 'schedule'
+  final String value; // czas w formacie HH:MM, device id, sensor id, cron expression
+  final String sensorType; // np. 'temperature', 'humidity' dla sensor triggers
   final String description;
 
   Trigger({
     required this.type,
     required this.value,
+    this.sensorType = '',
     required this.description,
   });
 }
 
 class Condition {
-  final String type; // 'device_state', 'time_range', 'sensor_value'
+  final String type; // 'device_state', 'time_range', 'sensor_value', 'weather'
   final String deviceId;
-  final String operator; // '==', '!=', '>', '<'
-  final String value;
+  final String sensorType; // np. 'temperature', 'humidity'
+  final String operator; // '==', '!=', '>', '<', '>=', '<='
+  final dynamic value; // może być string, number, bool
   final String description;
 
   Condition({
     required this.type,
     required this.deviceId,
+    this.sensorType = '',
     required this.operator,
     required this.value,
     required this.description,
@@ -45,15 +49,17 @@ class Condition {
 }
 
 class AutomationAction {
-  final String type; // 'device_toggle', 'device_set_value', 'notification'
+  final String type; // 'device_toggle', 'device_set_value', 'notification', 'scene', 'delay'
   final String deviceId;
-  final String value; // true/false dla toggle, wartość dla set_value
+  final dynamic value; // true/false dla toggle, wartość dla set_value, tekst dla notification
   final String description;
+  final int? delaySeconds; // dla akcji delay
 
   AutomationAction({
     required this.type,
     required this.deviceId,
     required this.value,
     required this.description,
+    this.delaySeconds,
   });
 }

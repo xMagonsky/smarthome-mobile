@@ -22,8 +22,32 @@ class AutomationProvider extends ChangeNotifier {
         action: AutomationAction(
           type: 'device_toggle',
           deviceId: '1',
-          value: 'true',
+          value: true,
           description: 'Turn on Living Room Light',
+        ),
+      ),
+      Automation(
+        id: '2',
+        name: 'Temperature Control',
+        trigger: Trigger(
+          type: 'sensor',
+          value: '4', // Outdoor Temperature Sensor
+          sensorType: 'temperature',
+          description: 'When outdoor temperature > 25°C',
+        ),
+        condition: Condition(
+          type: 'sensor_value',
+          deviceId: '4',
+          sensorType: 'temperature',
+          operator: '>',
+          value: 25,
+          description: 'Outdoor temperature > 25°C',
+        ),
+        action: AutomationAction(
+          type: 'device_toggle',
+          deviceId: '3', // Bedroom Thermostat
+          value: true,
+          description: 'Turn on air conditioning',
         ),
       ),
     ];

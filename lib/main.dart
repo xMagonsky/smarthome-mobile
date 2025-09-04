@@ -6,6 +6,7 @@ import 'core/providers/device_provider.dart';
 import 'core/providers/group_provider.dart';
 import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
+import 'core/services/automation_service.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
@@ -14,8 +15,21 @@ void main() {
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  late AutomationService automationService;
+
+  @override
+  void initState() {
+    super.initState();
+    // AutomationService will be initialized after providers are created
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +41,31 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         // Add more providers for other features as needed
       ],
-      child: MaterialApp(
-        title: 'Smart Home App',
-        theme: appTheme,
-        home: const MainScreen(),
-        // For named routes in future: routes: AppRoutes.routes,
+      child: Builder(
+        builder: (context) {
+          // Initialize AutomationService after providers are available
+          final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+          final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+          automationService = AutomationService(
+            deviceProvider: deviceProvider,
+            automationProvider: automationProvider,
+          );
+
+          return MaterialApp(
+            title: 'Smart Home App',
+            theme: appTheme,
+            home: const MainScreen(),
+            // For named routes in future: routes: AppRoutes.routes,
+          );
+        },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    automationService.dispose();
+    super.dispose();
   }
 }
 
