@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Dashboard'),
+        title: const Text('Welcome to Smart Home'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
