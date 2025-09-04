@@ -92,6 +92,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                 });
               },
             ),
+            const SizedBox(height: 16),
             if (_selectedTriggerType == 'time')
               TextFormField(
                 initialValue: _timeValue,
@@ -139,6 +140,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                 });
               },
             ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _selectedActionDeviceId.isEmpty ? null : _selectedActionDeviceId,
               decoration: const InputDecoration(
@@ -157,6 +159,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                 });
               },
             ),
+            const SizedBox(height: 16),
             if (_selectedActionType == 'device_toggle')
               SwitchListTile(
                 title: const Text('Turn On'),
