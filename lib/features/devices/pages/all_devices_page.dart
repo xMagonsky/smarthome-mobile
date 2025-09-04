@@ -1,40 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/device_provider.dart';
-import '../models/group.dart';
 import 'device_detail_page.dart';
 import '../widgets/device_card.dart';
+import 'add_device_page.dart';
 
-class DeviceListPage extends StatelessWidget {
-  final Group group;
-
-  const DeviceListPage({super.key, required this.group});
+class AllDevicesPage extends StatelessWidget {
+  const AllDevicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     final deviceProvider = Provider.of<DeviceProvider>(context);
 
-    // Get devices in this group
-    final devicesInGroup = deviceProvider.devices
-        .where((device) => group.deviceIds.contains(device.id))
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('${group.name} Devices'),
+        title: const Text('All Devices'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              // TODO: Navigate to edit group page
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddDevicePage()),
+              );
             },
           ),
         ],
       ),
       body: ListView.builder(
-        itemCount: devicesInGroup.length,
+        itemCount: deviceProvider.devices.length,
         itemBuilder: (context, index) {
-          final device = devicesInGroup[index];
+          final device = deviceProvider.devices[index];
           return DeviceCard(
             device: device,
             onTap: () {

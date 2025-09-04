@@ -18,6 +18,38 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addDevice(String name, String type) {
+    final newDevice = Device(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      type: type,
+    );
+    devices.add(newDevice);
+    notifyListeners();
+  }
+
+  void updateDevice(String id, String name, String type) {
+    final index = devices.indexWhere((d) => d.id == id);
+    if (index != -1) {
+      devices[index] = Device(
+        id: id,
+        name: name,
+        isOn: devices[index].isOn,
+        type: type,
+      );
+      notifyListeners();
+    }
+  }
+
+  void deleteDevice(String id) {
+    devices.removeWhere((d) => d.id == id);
+    notifyListeners();
+  }
+
+  Device? getDeviceById(String id) {
+    return devices.firstWhere((d) => d.id == id);
+  }
+
   void toggleDevice(String id, bool isOn) {
     final index = devices.indexWhere((d) => d.id == id);
     if (index != -1) {

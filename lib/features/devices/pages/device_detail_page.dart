@@ -13,7 +13,17 @@ class DeviceDetailPage extends StatelessWidget {
     final deviceProvider = Provider.of<DeviceProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(device.name)),
+      appBar: AppBar(
+        title: Text(device.name),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              // TODO: Navigate to edit device page
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
