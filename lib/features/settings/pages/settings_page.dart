@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/settings_provider.dart';
+import '../../../core/providers/auth_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -224,8 +225,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                // Handle sign out logic
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                authProvider.logout();
                 Navigator.of(context).pop();
+                // The AuthWrapper will handle showing login screen
               },
               child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
             ),

@@ -1,31 +1,41 @@
 import 'package:flutter/material.dart';
 import '../../features/devices/models/device.dart';
+import '../services/api_service.dart';
 
 class DeviceProvider extends ChangeNotifier {
   List<Device> devices = [];
+  final ApiService _apiService = ApiService();
 
   DeviceProvider() {
     loadDevices();
   }
 
-  void loadDevices() {
-    // Mock data; replace with repository call in future
-    devices = [
-      Device(id: '1', name: 'Living Room Light', type: 'light'),
-      Device(id: '2', name: 'Kitchen Plug', type: 'plug'),
-      Device(
-        id: '3',
-        name: 'Bedroom Thermostat',
-        type: 'thermostat',
-        sensorValues: {'temperature': 22.5, 'humidity': 45},
-      ),
-      Device(
-        id: '4',
-        name: 'Outdoor Temperature Sensor',
-        type: 'sensor',
-        sensorValues: {'temperature': 18.0},
-      ),
-    ];
+  void loadDevices() async {
+    try {
+      final response = await _apiService.fetchDevices();
+      if (response.statusCode == 200) {
+        // Parse the response and update devices
+        // For now, keep mock data
+        devices = [
+          Device(id: '1', name: 'Living Room Light', type: 'light'),
+          Device(id: '2', name: 'Kitchen Plug', type: 'plug'),
+          Device(
+            id: '3',
+            name: 'Bedroom Thermostat',
+            type: 'thermostat',
+            sensorValues: {'temperature': 22.5, 'humidity': 45},
+          ),
+          Device(
+            id: '4',
+            name: 'Outdoor Temperature Sensor',
+            type: 'sensor',
+            sensorValues: {'temperature': 18.0},
+          ),
+        ];
+      }
+    } catch (e) {
+      // Handle error
+    }
     notifyListeners();
   }
 
@@ -60,7 +70,11 @@ class DeviceProvider extends ChangeNotifier {
   }
 
   Device? getDeviceById(String id) {
-    return devices.firstWhere((d) => d.id == id);
+    try {
+      return devices.firstWhere((d) => d.id == id);
+    } catch (e) {
+      return null;
+    }
   }
 
   void toggleDevice(String id, bool isOn) {

@@ -6,13 +6,44 @@ import 'core/providers/device_provider.dart';
 import 'core/providers/group_provider.dart';
 import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
+import 'core/providers/auth_provider.dart';
 import 'core/services/automation_service.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
+import 'features/auth/screens/login_screen.dart';
 
 void main() {
   runApp(const MainApp());
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.checkAuthStatus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        if (auth.isAuthenticated) {
+          return const MainScreen();
+        } else {
+          return const LoginScreen();
+        }
+      },
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {
@@ -39,6 +70,7 @@ class _MainAppState extends State<MainApp> {
         ChangeNotifierProvider(create: (_) => GroupProvider()),
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         // Add more providers for other features as needed
       ],
       child: Builder(
@@ -54,8 +86,10 @@ class _MainAppState extends State<MainApp> {
           return MaterialApp(
             title: 'Smart Home App',
             theme: appTheme,
-            home: const MainScreen(),
-            // For named routes in future: routes: AppRoutes.routes,
+            home: const AuthWrapper(),
+            routes: {
+              '/home': (context) => const MainScreen(),
+            },
           );
         },
       ),
