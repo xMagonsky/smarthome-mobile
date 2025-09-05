@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/group_provider.dart';
+import '../../../core/providers/device_provider.dart';
 import '../widgets/dashboard_card.dart';
 import '../../devices/pages/devices_page.dart';
 import '../../devices/pages/add_group_page.dart';
@@ -12,11 +13,18 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final groupProvider = Provider.of<GroupProvider>(context);
+    final deviceProvider = Provider.of<DeviceProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome to Smart Home'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              deviceProvider.loadDevices();
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {

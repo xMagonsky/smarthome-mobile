@@ -37,6 +37,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
         if (auth.isAuthenticated) {
+          // Load devices after authentication is confirmed
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+            deviceProvider.loadDevices();
+          });
           return const MainScreen();
         } else {
           return const LoginScreen();

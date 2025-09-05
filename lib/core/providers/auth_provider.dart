@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
+import 'dart:convert';
 
 class AuthProvider with ChangeNotifier {
   bool _isAuthenticated = false;
@@ -25,7 +26,8 @@ class AuthProvider with ChangeNotifier {
     try {
       final response = await _apiService.login(username, password);
       if (response.statusCode == 200) {
-        _token = response.body.trim(); // Assuming the token is in the response body
+        final jsonResponse = jsonDecode(response.body);
+        _token = jsonResponse['token'];
         _apiService.setToken(_token!);
         _isAuthenticated = true;
         await _secureStorage.write(key: 'jwt_token', value: _token);
@@ -43,7 +45,8 @@ class AuthProvider with ChangeNotifier {
     try {
       final response = await _apiService.register(username, password, email);
       if (response.statusCode == 200) {
-        _token = response.body.trim(); // Assuming the token is in the response body
+        final jsonResponse = jsonDecode(response.body);
+        _token = jsonResponse['token'];
         _apiService.setToken(_token!);
         _isAuthenticated = true;
         await _secureStorage.write(key: 'jwt_token', value: _token);
