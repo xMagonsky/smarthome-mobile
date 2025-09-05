@@ -153,7 +153,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                   border: OutlineInputBorder(),
                 ),
                 items: deviceProvider.devices
-                    .where((device) => device.sensorValues != null && device.sensorValues!.isNotEmpty)
+                    .where((device) => device.type == 'sensor' && device.state.isNotEmpty)
                     .map((device) {
                   return DropdownMenuItem(
                     value: device.id,

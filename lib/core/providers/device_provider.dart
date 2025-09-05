@@ -34,20 +34,19 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addDevice(String name, String type, {Map<String, dynamic>? sensorValues}) {
+  void addDevice(String name, String type) {
     final newDevice = Device(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       type: type,
       state: {'on': false},
       mqttTopic: 'devices/${DateTime.now().millisecondsSinceEpoch}/state',
-      sensorValues: sensorValues,
     );
     devices.add(newDevice);
     notifyListeners();
   }
 
-  void updateDevice(String id, String name, String type, {Map<String, dynamic>? sensorValues}) {
+  void updateDevice(String id, String name, String type) {
     final index = devices.indexWhere((d) => d.id == id);
     if (index != -1) {
       devices[index] = Device(
@@ -56,7 +55,6 @@ class DeviceProvider extends ChangeNotifier {
         type: type,
         state: devices[index].state,
         mqttTopic: devices[index].mqttTopic,
-        sensorValues: sensorValues ?? devices[index].sensorValues,
       );
       notifyListeners();
     }
@@ -86,7 +84,6 @@ class DeviceProvider extends ChangeNotifier {
         type: devices[index].type,
         state: updatedState,
         mqttTopic: devices[index].mqttTopic,
-        sensorValues: devices[index].sensorValues,
       );
       notifyListeners();
       // In future: Call API to update real device
@@ -96,15 +93,14 @@ class DeviceProvider extends ChangeNotifier {
   void updateSensorValue(String id, String sensorType, dynamic value) {
     final index = devices.indexWhere((d) => d.id == id);
     if (index != -1) {
-      final currentValues = devices[index].sensorValues ?? {};
-      currentValues[sensorType] = value;
+      final updatedState = Map<String, dynamic>.from(devices[index].state);
+      updatedState[sensorType] = value;
       devices[index] = Device(
         id: id,
         name: devices[index].name,
         type: devices[index].type,
-        state: devices[index].state,
+        state: updatedState,
         mqttTopic: devices[index].mqttTopic,
-        sensorValues: currentValues,
       );
       notifyListeners();
       // In future: Call API to update real device

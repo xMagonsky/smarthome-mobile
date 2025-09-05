@@ -24,21 +24,81 @@ class DeviceDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Type: ${device.type}', style: const TextStyle(fontSize: 20)),
-            Switch(
-              value: device.isOn,
-              onChanged: (value) {
-                deviceProvider.toggleDevice(device.id, value);
-              },
+            Text(
+              'Type: ${device.type}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const Text('Toggle On/Off'),
+            const SizedBox(height: 20),
+            if (device.type == 'sensor')
+              _buildSensorDetails()
+            else
+              _buildDeviceControls(deviceProvider),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildSensorDetails() {
+    if (device.state.isEmpty) {
+      return const Text('No sensor data available');
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sensor Readings:',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 10),
+        ...device.state.entries.map((entry) => Card(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: ListTile(
+                leading: _getSensorIcon(entry.key),
+                title: Text(entry.key.toUpperCase()),
+                trailing: Text(
+                  '${entry.value}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+
+  Widget _buildDeviceControls(DeviceProvider deviceProvider) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Switch(
+            value: device.isOn,
+            onChanged: (value) {
+              deviceProvider.toggleDevice(device.id, value);
+            },
+          ),
+          const Text('Toggle On/Off'),
+        ],
+      ),
+    );
+  }
+
+  Icon _getSensorIcon(String sensorType) {
+    switch (sensorType.toLowerCase()) {
+      case 'temperature':
+        return const Icon(Icons.thermostat, color: Colors.red);
+      case 'humidity':
+        return const Icon(Icons.water_drop, color: Colors.blue);
+      case 'co2':
+        return const Icon(Icons.cloud, color: Colors.green);
+      default:
+        return const Icon(Icons.sensors, color: Colors.grey);
+    }
   }
 }
