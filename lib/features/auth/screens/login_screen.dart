@@ -59,13 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = true;
     });
-
+print("Attempting login with username: ${_usernameController.text}");
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.login(
       _usernameController.text,
       _passwordController.text,
     );
-
+print("Login success: $success");
     setState(() {
       _isLoading = false;
     });

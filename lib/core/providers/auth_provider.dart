@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
 
@@ -11,10 +11,10 @@ class AuthProvider with ChangeNotifier {
   String? get token => _token;
 
   final ApiService _apiService = ApiService();
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   Future<void> checkAuthStatus() async {
-    _token = await _secureStorage.read(key: 'jwt_token');
+    final prefs = await SharedPreferences.getInstance();
+    _token = prefs.getString('jwt_token');
     if (_token != null) {
       _apiService.setToken(_token!);
       _isAuthenticated = true;
@@ -23,20 +23,25 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> login(String username, String password) async {
+    print("Login called with username: $username");
     try {
       final response = await _apiService.login(username, password);
+      print("Login response: ${response.body}");
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
+        print("Login successful, token: ${jsonResponse['token']}");
         _token = jsonResponse['token'];
         _apiService.setToken(_token!);
         _isAuthenticated = true;
-        await _secureStorage.write(key: 'jwt_token', value: _token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', _token!);
         notifyListeners();
         return true;
       } else {
         return false;
       }
     } catch (e) {
+      print("Login failed with error: $e");
       return false;
     }
   }
@@ -49,7 +54,8 @@ class AuthProvider with ChangeNotifier {
         _token = jsonResponse['token'];
         _apiService.setToken(_token!);
         _isAuthenticated = true;
-        await _secureStorage.write(key: 'jwt_token', value: _token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwt_token', _token!);
         notifyListeners();
         return true;
       } else {
@@ -64,7 +70,8 @@ class AuthProvider with ChangeNotifier {
     _token = null;
     _isAuthenticated = false;
     _apiService.setToken(null); // Clear token in API service
-    await _secureStorage.delete(key: 'jwt_token');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
     notifyListeners();
   }
 }

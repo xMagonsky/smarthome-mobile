@@ -36,12 +36,19 @@ class ApiService {
   }
 
   Future<http.Response> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('${AppConstants.apiBaseUrl}/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
-    );
-    return response;
+    print("API Service: Attempting login for $username");
+    try {
+      final response = await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username, 'password': password}),
+      );
+      print("API Service: Login response status: ${response.statusCode}");
+      return response;
+    } catch (e) {
+      print("API Service: Login failed with error: $e");
+      rethrow;
+    }
   }
 
   Future<http.Response> register(String username, String password, String email) async {
