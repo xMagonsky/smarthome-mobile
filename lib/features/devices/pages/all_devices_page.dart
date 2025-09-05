@@ -17,6 +17,12 @@ class AllDevicesPage extends StatelessWidget {
         title: const Text('All Devices'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              deviceProvider.loadDevices();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
               Navigator.push(

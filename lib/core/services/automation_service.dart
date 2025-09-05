@@ -50,8 +50,8 @@ class AutomationService {
           break;
         case 'sensor':
           final device = deviceProvider.getDeviceById(automation.trigger.value);
-          if (device != null && device.sensorValues != null) {
-            final sensorValue = device.sensorValues![automation.trigger.sensorType];
+          if (device != null) {
+            final sensorValue = device.state[automation.trigger.sensorType];
             if (sensorValue != null) {
               shouldExecute = _evaluateCondition(sensorValue, automation.trigger.value, automation.condition);
             }
@@ -99,11 +99,9 @@ class AutomationService {
       case 'device_state':
         return device.isOn == (condition.value == 'true');
       case 'sensor_value':
-        if (device.sensorValues != null) {
-          final sensorValue = device.sensorValues![condition.sensorType];
-          if (sensorValue != null) {
-            return _evaluateCondition(sensorValue, condition.value.toString(), condition);
-          }
+        final sensorValue = device.state[condition.sensorType];
+        if (sensorValue != null) {
+          return _evaluateCondition(sensorValue, condition.value.toString(), condition);
         }
         return false;
       default:

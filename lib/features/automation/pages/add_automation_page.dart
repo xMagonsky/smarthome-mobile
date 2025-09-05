@@ -153,7 +153,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                   border: OutlineInputBorder(),
                 ),
                 items: deviceProvider.devices
-                    .where((device) => device.sensorValues != null && device.sensorValues!.isNotEmpty)
+                    .where((device) => device.type == 'sensor' && device.state.isNotEmpty)
                     .map((device) {
                   return DropdownMenuItem(
                     value: device.id,
@@ -248,7 +248,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedActionDeviceId.isEmpty ? null : _selectedActionDeviceId,
+              initialValue: (_selectedActionDeviceId.isNotEmpty && deviceProvider.devices.any((device) => device.id == _selectedActionDeviceId))
+                  ? _selectedActionDeviceId
+                  : null,
               decoration: const InputDecoration(
                 labelText: 'Target Device',
                 border: OutlineInputBorder(),
@@ -261,7 +263,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
               }).toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedActionDeviceId = value!;
+                  _selectedActionDeviceId = value ?? '';
                 });
               },
             ),

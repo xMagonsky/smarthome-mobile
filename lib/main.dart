@@ -1,18 +1,55 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smarthome_mobile/core/providers/rule_provider.dart';
+
 import 'core/theme/app_theme.dart';
 import 'core/providers/device_provider.dart';
 import 'core/providers/group_provider.dart';
 import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
+import 'core/providers/auth_provider.dart';
 import 'core/services/automation_service.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
+import 'features/auth/screens/login_screen.dart';
 
 void main() {
   runApp(const MainApp());
+}
+
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  @override
+  void initState() {
+    super.initState();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.checkAuthStatus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        if (auth.isAuthenticated) {
+          // Load devices after authentication is confirmed
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+            deviceProvider.loadDevices();
+          });
+          return const MainScreen();
+        } else {
+          return const LoginScreen();
+        }
+      },
+    );
+  }
 }
 
 class MainApp extends StatefulWidget {
@@ -39,6 +76,8 @@ class _MainAppState extends State<MainApp> {
         ChangeNotifierProvider(create: (_) => GroupProvider()),
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => RuleProvider()),
         // Add more providers for other features as needed
       ],
       child: Builder(
@@ -54,8 +93,10 @@ class _MainAppState extends State<MainApp> {
           return MaterialApp(
             title: 'Smart Home App',
             theme: appTheme,
-            home: const MainScreen(),
-            // For named routes in future: routes: AppRoutes.routes,
+            home: const AuthWrapper(),
+            routes: {
+              '/home': (context) => const MainScreen(),
+            },
           );
         },
       ),
@@ -78,6 +119,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _isNavigatingToLogin = false;
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
@@ -108,28 +150,43 @@ class _MainScreenState extends State<MainScreen> {
         title = 'Smart Home App';
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        // If user is no longer authenticated, navigate back to login
+        if (!auth.isAuthenticated && !_isNavigatingToLogin) {
+          _isNavigatingToLogin = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            }
+          });
+          return const SizedBox.shrink(); // Return empty widget while navigating
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: Text(title)),
+          body: _widgetOptions.elementAt(_selectedIndex),
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings_remote),
+                label: 'Automation',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.amber[800],
+            onTap: _onItemTapped,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_remote),
-            label: 'Automation',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
+        );
+      },
     );
   }
 }

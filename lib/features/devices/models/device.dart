@@ -1,15 +1,17 @@
 class Device {
   final String id;
   final String name;
-  final bool isOn;
   final String type;
-  final Map<String, dynamic>? sensorValues; // np. {'temperature': 25.5, 'humidity': 60}
+  final Map<String, dynamic> state;
+  final String mqttTopic;
 
   Device({
     required this.id,
     required this.name,
-    this.isOn = false,
     required this.type,
-    this.sensorValues,
+    required this.state,
+    required this.mqttTopic,
   });
+
+  bool get isOn => state['on'] ?? false;
 }
