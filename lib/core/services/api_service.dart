@@ -12,7 +12,7 @@ class ApiService {
 
   ApiService._internal();
 
-  void setToken(String token) {
+  void setToken(String? token) {
     _token = token;
   }
 

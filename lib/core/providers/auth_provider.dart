@@ -60,7 +60,7 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     _token = null;
     _isAuthenticated = false;
-    _apiService.setToken(''); // Clear token in API service
+    _apiService.setToken(null); // Clear token in API service
     await _secureStorage.delete(key: 'jwt_token');
     notifyListeners();
   }

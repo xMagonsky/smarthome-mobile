@@ -112,6 +112,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  bool _isNavigatingToLogin = false;
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomePage(),
@@ -142,28 +143,43 @@ class _MainScreenState extends State<MainScreen> {
         title = 'Smart Home App';
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        // If user is no longer authenticated, navigate back to login
+        if (!auth.isAuthenticated && !_isNavigatingToLogin) {
+          _isNavigatingToLogin = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            }
+          });
+          return const SizedBox.shrink(); // Return empty widget while navigating
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: Text(title)),
+          body: _widgetOptions.elementAt(_selectedIndex),
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings_remote),
+                label: 'Automation',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.amber[800],
+            onTap: _onItemTapped,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_remote),
-            label: 'Automation',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        onTap: _onItemTapped,
-      ),
+        );
+      },
     );
   }
 }
