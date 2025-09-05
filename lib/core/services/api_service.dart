@@ -28,6 +28,13 @@ class ApiService {
     );
   }
 
+  Future<http.Response> setDeviceOwner(String deviceId) async {
+    return http.patch(
+      Uri.parse('${AppConstants.apiBaseUrl}/devices/$deviceId/setowner'),
+      headers: _headers,
+    );
+  }
+
   Future<http.Response> login(String username, String password) async {
     final response = await http.post(
       Uri.parse('${AppConstants.apiBaseUrl}/auth/login'),
@@ -44,5 +51,12 @@ class ApiService {
       body: jsonEncode({'username': username, 'password': password, 'email': email}),
     );
     return response;
+  }
+
+  Future<http.Response> fetchAutomationRules() async {
+    return http.get(
+      Uri.parse('${AppConstants.apiBaseUrl}/automations/rules'),
+      headers: _headers,
+    );
   }
 }

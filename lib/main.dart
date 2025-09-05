@@ -1,6 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smarthome_mobile/core/providers/rule_provider.dart';
+
 import 'core/theme/app_theme.dart';
 import 'core/providers/device_provider.dart';
 import 'core/providers/group_provider.dart';
@@ -76,6 +77,7 @@ class _MainAppState extends State<MainApp> {
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => RuleProvider()),
         // Add more providers for other features as needed
       ],
       child: Builder(
