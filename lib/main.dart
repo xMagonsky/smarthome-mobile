@@ -4,7 +4,6 @@ import 'package:smarthome_mobile/core/providers/rule_provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/providers/device_provider.dart';
-import 'core/providers/group_provider.dart';
 import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/providers/auth_provider.dart';
@@ -73,7 +72,6 @@ class _MainAppState extends State<MainApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
-        ChangeNotifierProvider(create: (_) => GroupProvider()),
         ChangeNotifierProvider(create: (_) => AutomationProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),

@@ -1,73 +1,337 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/group_provider.dart';
 import '../../../core/providers/device_provider.dart';
-import '../widgets/dashboard_card.dart';
-import '../../devices/pages/devices_page.dart';
-import '../../devices/pages/add_group_page.dart';
-import '../../devices/pages/all_devices_page.dart';
+import '../../devices/widgets/device_card.dart';
+import '../../devices/pages/device_detail_page.dart';
+import '../../devices/pages/add_device_page.dart';
+import '../widgets/stats_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Dzień dobry!';
+    } else if (hour < 18) {
+      return 'Miłego popołudnia!';
+    } else {
+      return 'Dobry wieczór!';
+    }
+  }
+
+  String _getFormattedDateTime() {
+    final now = DateTime.now();
+    final weekdays = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+    final months = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 
+                   'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+    
+    final weekday = weekdays[now.weekday - 1];
+    final day = now.day;
+    final month = months[now.month - 1];
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    
+    return '$weekday, $day $month • $hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final groupProvider = Provider.of<GroupProvider>(context);
     final deviceProvider = Provider.of<DeviceProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Welcome to Smart Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              deviceProvider.loadDevices();
-            },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white,
+              Colors.grey.shade50,
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddGroupPage()),
-              );
-            },
+        ),
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 120,
+              floating: false,
+              pinned: true,
+              backgroundColor: Colors.white.withValues(alpha: 0.9),
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  'Smart Home',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                centerTitle: true,
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    deviceProvider.loadDevices();
+                  },
+                ),
+              ],
+            ),
+            SliverToBoxAdapter(
+              child: _buildWelcomeBanner(context),
+            ),
+            SliverToBoxAdapter(
+              child: _buildStatsSection(context, deviceProvider, isTablet),
+            ),
+            if (deviceProvider.devices.isEmpty)
+              SliverToBoxAdapter(
+                child: _buildEmptyState(context),
+              )
+            else
+              _buildDevicesList(deviceProvider, isTablet),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddDevicePage()),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).primaryColor.withValues(alpha: 0.15),
+            Theme.of(context).primaryColor.withValues(alpha: 0.08),
+            Colors.white.withValues(alpha: 0.1),
+          ],
+          stops: const [0.0, 0.7, 1.0],
+        ),
+        borderRadius: BorderRadius.circular(16.0),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+            blurRadius: 12.0,
+            offset: const Offset(0, 4),
+            spreadRadius: 1.0,
           ),
-          IconButton(
-            icon: const Icon(Icons.list),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AllDevicesPage()),
-              );
-            },
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 6.0,
+            offset: const Offset(0, 1),
+          ),
+        ],
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+          width: 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _getGreeting(),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Witaj w Twoim Inteligentnym Domu!',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _getFormattedDateTime(),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(
+                Icons.home,
+                size: 24,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Mój Dom',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: groupProvider.groups.length,
-        itemBuilder: (context, index) {
-          final group = groupProvider.groups[index];
-          return DashboardCard(
-            title: group.name,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DeviceListPage(group: group),
-                ),
-              );
-            },
-          );
-        },
+    );
+  }
+
+  Widget _buildStatsSection(BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Przegląd',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: isTablet ? 4 : 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: isTablet ? 1.0 : 1.2,
+            children: [
+              StatsCard(
+                title: 'Urządzenia Online',
+                value: '${deviceProvider.onlineDevicesCount}',
+                icon: Icons.wifi,
+                color: Colors.green,
+              ),
+              StatsCard(
+                title: 'Urządzenia Offline',
+                value: '${deviceProvider.offlineDevicesCount}',
+                icon: Icons.wifi_off,
+                color: Colors.red,
+              ),
+              StatsCard(
+                title: 'Ulubione',
+                value: '${deviceProvider.favoriteDevicesCount}',
+                icon: Icons.star,
+                color: Colors.amber,
+              ),
+              StatsCard(
+                title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
+                value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
+                icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
+                color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(40.0),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Icon(
+                Icons.devices,
+                size: 40,
+                color: Colors.grey.shade400,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Brak urządzeń',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Dodaj swoje pierwsze urządzenie używając przycisku + poniżej',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDevicesList(DeviceProvider deviceProvider, bool isTablet) {
+    if (isTablet) {
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.5,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final device = deviceProvider.devices[index];
+              return DeviceCard(
+                device: device,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DeviceDetailPage(device: device),
+                    ),
+                  );
+                },
+              );
+            },
+            childCount: deviceProvider.devices.length,
+          ),
+        ),
+      );
+    } else {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final device = deviceProvider.devices[index];
+            return DeviceCard(
+              device: device,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DeviceDetailPage(device: device),
+                  ),
+                );
+              },
+            );
+          },
+          childCount: deviceProvider.devices.length,
+        ),
+      );
+    }
   }
 }

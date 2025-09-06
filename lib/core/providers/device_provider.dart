@@ -22,6 +22,8 @@ class DeviceProvider extends ChangeNotifier {
           type: data['type'],
           state: data['state'],
           mqttTopic: data['mqtt_topic'],
+          isFavorite: data['is_favorite'] ?? false,
+          isOnline: data['is_online'] ?? true,
         )).toList();
       } else {
         // Handle error
@@ -49,12 +51,9 @@ class DeviceProvider extends ChangeNotifier {
   void updateDevice(String id, String name, String type) {
     final index = devices.indexWhere((d) => d.id == id);
     if (index != -1) {
-      devices[index] = Device(
-        id: id,
+      devices[index] = devices[index].copyWith(
         name: name,
         type: type,
-        state: devices[index].state,
-        mqttTopic: devices[index].mqttTopic,
       );
       notifyListeners();
     }
@@ -78,13 +77,7 @@ class DeviceProvider extends ChangeNotifier {
     if (index != -1) {
       final updatedState = Map<String, dynamic>.from(devices[index].state);
       updatedState['on'] = isOn;
-      devices[index] = Device(
-        id: id,
-        name: devices[index].name,
-        type: devices[index].type,
-        state: updatedState,
-        mqttTopic: devices[index].mqttTopic,
-      );
+      devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
       // In future: Call API to update real device
     }
@@ -95,15 +88,26 @@ class DeviceProvider extends ChangeNotifier {
     if (index != -1) {
       final updatedState = Map<String, dynamic>.from(devices[index].state);
       updatedState[sensorType] = value;
-      devices[index] = Device(
-        id: id,
-        name: devices[index].name,
-        type: devices[index].type,
-        state: updatedState,
-        mqttTopic: devices[index].mqttTopic,
-      );
+      devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
       // In future: Call API to update real device
     }
   }
+
+  void toggleFavorite(String id) {
+    final index = devices.indexWhere((d) => d.id == id);
+    if (index != -1) {
+      devices[index] = devices[index].copyWith(isFavorite: !devices[index].isFavorite);
+      notifyListeners();
+    }
+  }
+
+  // Statistics getters
+  int get onlineDevicesCount => devices.where((d) => d.isOnline).length;
+  int get offlineDevicesCount => devices.where((d) => !d.isOnline).length;
+  int get favoriteDevicesCount => devices.where((d) => d.isFavorite).length;
+  List<Device> get favoriteDevices => devices.where((d) => d.isFavorite).toList();
+  
+  bool get allDevicesOk => devices.isEmpty || devices.every((d) => d.isOnline);
+  int get alertsCount => devices.where((d) => !d.isOnline).length;
 }
