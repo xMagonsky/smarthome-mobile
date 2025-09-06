@@ -86,7 +86,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
           if (widget.automation != null)
             IconButton(
               icon: const Icon(Icons.delete),
-              onPressed: () => _deleteAutomation(context),
+              onPressed: () => _deleteAutomation(),
             ),
         ],
       ),
@@ -155,7 +155,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
                 // Save button
                 ElevatedButton(
-                  onPressed: isLoading ? null : () => _saveAutomation(context),
+                  onPressed: isLoading ? null : () => _saveAutomation(),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 56),
                     backgroundColor: Theme.of(context).primaryColor,
@@ -193,7 +193,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     );
   }
 
-  Future<void> _saveAutomation(BuildContext context) async {
+  Future<void> _saveAutomation() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -209,7 +209,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     });
 
     try {
-      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+      final automationProvider = Provider.of<AutomationProvider>(this.context, listen: false);
 
       if (widget.automation == null) {
         // Create new automation
@@ -229,7 +229,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
       }
 
       if (automationProvider.errorMessage == null) {
-        Navigator.pop(context);
+        if (mounted) Navigator.pop(this.context);
         _showSuccessSnackBar(widget.automation == null ? 'Automation created successfully' : 'Automation updated successfully');
       } else {
         _showErrorSnackBar(automationProvider.errorMessage!);
@@ -241,9 +241,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     }
   }
 
-  Future<void> _deleteAutomation(BuildContext context) async {
+  Future<void> _deleteAutomation() async {
     final confirmed = await showDialog<bool>(
-      context: context,
+      context: this.context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Automation'),
         content: const Text('Are you sure you want to delete this automation?'),
@@ -262,11 +262,11 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     );
 
     if (confirmed == true && widget.automation != null) {
-      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+      final automationProvider = Provider.of<AutomationProvider>(this.context, listen: false);
       await automationProvider.removeAutomation(widget.automation!.id);
       
       if (automationProvider.errorMessage == null) {
-        Navigator.pop(context);
+        if (mounted) Navigator.pop(this.context);
         _showSuccessSnackBar('Automation deleted successfully');
       } else {
         _showErrorSnackBar(automationProvider.errorMessage!);
@@ -308,21 +308,25 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
   }
 
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override

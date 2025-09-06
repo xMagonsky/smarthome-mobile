@@ -22,7 +22,6 @@ final ThemeData appTheme = ThemeData(
     seedColor: SmartHomeColors.primaryBlue,
     brightness: Brightness.light,
     surface: SmartHomeColors.backgroundLight,
-    background: SmartHomeColors.backgroundLight,
   ),
   scaffoldBackgroundColor: SmartHomeColors.backgroundLight,
   appBarTheme: const AppBarTheme(

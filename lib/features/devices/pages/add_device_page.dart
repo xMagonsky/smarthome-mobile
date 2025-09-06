@@ -22,12 +22,14 @@ class _AddDevicePageState extends State<AddDevicePage> {
               if (_nameController.text.isNotEmpty) {
                 final response = await ApiService().setDeviceOwner(_nameController.text);
                 if (response.statusCode == 200) {
-                  Navigator.pop(context);
+                  if (mounted) Navigator.pop(this.context);
                 } else {
                   print('Failed to add device: ${response.body}');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Failed to add device')),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(content: Text('Failed to add device')),
+                    );
+                  }
                 }
               }
             },
