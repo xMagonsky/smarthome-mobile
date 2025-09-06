@@ -115,7 +115,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
             
             // Add buttons
             Wrap(
@@ -162,7 +162,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
           children: [
             // Condition type
             DropdownButtonFormField<String>(
-              value: condition['type'] ?? 'sensor',
+              initialValue: condition['type'] ?? 'sensor',
               decoration: const InputDecoration(
                 labelText: 'Type',
                 border: OutlineInputBorder(),
@@ -203,7 +203,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             if (condition['type'] == 'sensor') ...[
               // Device selection
               DropdownButtonFormField<String>(
-                value: _getValidDeviceId(condition['deviceId']?.toString()),
+                initialValue: _getValidDeviceId(condition['deviceId']?.toString()),
                 decoration: const InputDecoration(
                   labelText: 'Device',
                   border: OutlineInputBorder(),
@@ -218,7 +218,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       value: device['id']?.toString() ?? '',
                       child: Text(device['name'] ?? 'Unknown Device'),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -231,7 +231,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               
               // Sensor key
               DropdownButtonFormField<String>(
-                value: condition['key'] ?? 'temperature',
+                initialValue: condition['key'] ?? 'temperature',
                 decoration: const InputDecoration(
                   labelText: 'Sensor Type',
                   border: OutlineInputBorder(),
@@ -257,7 +257,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   Expanded(
                     flex: 1,
                     child: DropdownButtonFormField<String>(
-                      value: condition['op'] ?? '>',
+                      initialValue: condition['op'] ?? '>',
                       decoration: const InputDecoration(
                         labelText: 'Op',
                         border: OutlineInputBorder(),
@@ -317,7 +317,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   Expanded(
                     flex: 1,
                     child: DropdownButtonFormField<String>(
-                      value: condition['op'] ?? '>',
+                      initialValue: condition['op'] ?? '>',
                       decoration: const InputDecoration(
                         labelText: 'Op',
                         border: OutlineInputBorder(),
@@ -355,7 +355,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             ] else if (condition['type'] == 'device') ...[
               // Device selection for device state condition
               DropdownButtonFormField<String>(
-                value: _getValidDeviceId(condition['deviceId']?.toString()),
+                initialValue: _getValidDeviceId(condition['deviceId']?.toString()),
                 decoration: const InputDecoration(
                   labelText: 'Device',
                   border: OutlineInputBorder(),
@@ -370,7 +370,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       value: device['id']?.toString() ?? '',
                       child: Text(device['name'] ?? 'Unknown Device'),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (value) {
                   setState(() {
@@ -383,7 +383,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               
               // Device state selection
               DropdownButtonFormField<String>(
-                value: condition['value']?.toString() ?? 'true',
+                initialValue: condition['value']?.toString() ?? 'true',
                 decoration: const InputDecoration(
                   labelText: 'State',
                   border: OutlineInputBorder(),

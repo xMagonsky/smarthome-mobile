@@ -209,7 +209,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     });
 
     try {
-      final automationProvider = Provider.of<AutomationProvider>(this.context, listen: false);
+      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
 
       if (widget.automation == null) {
         // Create new automation
@@ -229,7 +229,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
       }
 
       if (automationProvider.errorMessage == null) {
-        if (mounted) Navigator.pop(this.context);
+        if (mounted) Navigator.pop(context);
         _showSuccessSnackBar(widget.automation == null ? 'Automation created successfully' : 'Automation updated successfully');
       } else {
         _showErrorSnackBar(automationProvider.errorMessage!);
@@ -243,7 +243,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
   Future<void> _deleteAutomation() async {
     final confirmed = await showDialog<bool>(
-      context: this.context,
+      context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Automation'),
         content: const Text('Are you sure you want to delete this automation?'),
@@ -262,11 +262,11 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     );
 
     if (confirmed == true && widget.automation != null) {
-      final automationProvider = Provider.of<AutomationProvider>(this.context, listen: false);
+      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
       await automationProvider.removeAutomation(widget.automation!.id);
       
       if (automationProvider.errorMessage == null) {
-        if (mounted) Navigator.pop(this.context);
+        if (mounted) Navigator.pop(context);
         _showSuccessSnackBar('Automation deleted successfully');
       } else {
         _showErrorSnackBar(automationProvider.errorMessage!);

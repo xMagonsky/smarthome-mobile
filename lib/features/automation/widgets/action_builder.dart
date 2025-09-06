@@ -77,7 +77,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
               ),
             ),
           );
-        }).toList(),
+        }),
         
         // Add action button
         ElevatedButton.icon(
@@ -99,7 +99,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
       children: [
         // Action type
         DropdownButtonFormField<String>(
-          value: action['action'] ?? 'set_state',
+          initialValue: action['action'] ?? 'set_state',
           decoration: const InputDecoration(
             labelText: 'Action Type',
             border: OutlineInputBorder(),
@@ -147,7 +147,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
         // Device selection (if needed)
         if (action['action'] != 'send_notification' && action['action'] != 'delay')
           DropdownButtonFormField<String>(
-            value: _getValidDeviceId(action['device_id']?.toString()),
+            initialValue: _getValidDeviceId(action['device_id']?.toString()),
             decoration: const InputDecoration(
               labelText: 'Target Device',
               border: OutlineInputBorder(),
@@ -162,7 +162,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
                   value: device['id']?.toString() ?? '',
                   child: Text(device['name'] ?? 'Unknown Device'),
                 );
-              }).toList(),
+              }),
             ],
             onChanged: (value) {
               setState(() {

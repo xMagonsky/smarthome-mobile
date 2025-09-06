@@ -109,7 +109,7 @@ class AutomationPreviewWidget extends StatelessWidget {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       );
     } else {
@@ -168,7 +168,7 @@ class AutomationPreviewWidget extends StatelessWidget {
                 ...actions.map((action) => Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: _buildActionText(action),
-                )).toList(),
+                )),
             ],
           ),
         ),
