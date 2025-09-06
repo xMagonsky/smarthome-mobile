@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../features/automation/models/rule.dart';
-import '../services/automation_api_service.dart';
+import '../services/api_service.dart';
 
 class AutomationProvider extends ChangeNotifier {
   List<Rule> automations = [];
-  final AutomationApiService _apiService;
+  final ApiService _apiService;
   bool isLoading = false;
   String? errorMessage;
 
-  AutomationProvider({required AutomationApiService apiService}) : _apiService = apiService;
+  AutomationProvider({required ApiService apiService}) : _apiService = apiService;
 
   Future<void> loadAutomations() async {
     isLoading = true;

@@ -1,12 +1,10 @@
 // Example usage of the new automation system
 
 import 'package:flutter/material.dart';
-import '../core/services/automation_api_service.dart';
-import '../core/config/api_config.dart';
+import '../core/services/api_service.dart';
 
 class AutomationExamples {
-  static final AutomationApiService _apiService = 
-      AutomationApiService(baseUrl: ApiConfig.baseUrl);
+  static final ApiService _apiService = ApiService();
 
   // Example 1: Simple time-based automation
   static Future<void> createTimeBasedAutomation() async {

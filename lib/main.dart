@@ -7,9 +7,7 @@ import 'core/providers/device_provider.dart';
 import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/providers/auth_provider.dart';
-import 'core/services/automation_service.dart';
-import 'core/services/automation_api_service.dart';
-import 'core/config/api_config.dart';
+import 'core/services/api_service.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
@@ -43,6 +41,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
             deviceProvider.loadDevices();
+            final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+            automationProvider.loadAutomations();
           });
           return const MainScreen();
         } else {
@@ -61,7 +61,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  late AutomationService automationService;
 
   @override
   void initState() {
@@ -72,7 +71,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     // Create the API service first
-    final automationApiService = AutomationApiService(baseUrl: ApiConfig.baseUrl);
+    final automationApiService = ApiService();
 
     return MultiProvider(
       providers: [
@@ -85,13 +84,6 @@ class _MainAppState extends State<MainApp> {
       ],
       child: Builder(
         builder: (context) {
-          // Initialize AutomationService after providers are available
-          final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
-          final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
-          automationService = AutomationService(
-            deviceProvider: deviceProvider,
-            automationProvider: automationProvider,
-          );
 
           return MaterialApp(
             title: 'Smart Home App',
@@ -108,7 +100,6 @@ class _MainAppState extends State<MainApp> {
 
   @override
   void dispose() {
-    automationService.dispose();
     super.dispose();
   }
 }
