@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:logger/logger.dart';
-import '../../features/automation/models/automation.dart';
+import '../../features/automation/models/rule.dart';
 import '../providers/device_provider.dart';
 import '../providers/automation_provider.dart';
 
@@ -32,99 +32,156 @@ class AutomationService {
     final currentTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
     for (final automation in automationProvider.automations) {
-      if (!automation.isEnabled) continue;
+      if (!automation.enabled) continue;
 
       bool shouldExecute = false;
 
-      switch (automation.trigger.type) {
+      // Check if conditions are met
+      shouldExecute = _evaluateConditions(automation.conditions, currentTime);
+
+      if (shouldExecute) {
+        _executeActions(automation.actions);
+      }
+    }
+  }
+
+  bool _evaluateConditions(Conditions conditions, String currentTime) {
+    if (conditions.children.isEmpty) return false;
+
+    List<bool> results = [];
+    
+    for (final condition in conditions.children) {
+      bool conditionMet = false;
+      
+      switch (condition.type) {
         case 'time':
-          shouldExecute = automation.trigger.value == currentTime;
-          break;
-        case 'device':
-          final device = deviceProvider.getDeviceById(automation.trigger.value);
-          if (device != null) {
-            // For device state triggers, we could check if device state changed
-            // For now, just check current state
-            shouldExecute = true; // This would need more logic for actual device state changes
-          }
+          conditionMet = _evaluateTimeCondition(condition, currentTime);
           break;
         case 'sensor':
-          final device = deviceProvider.getDeviceById(automation.trigger.value);
-          if (device != null) {
-            final sensorValue = device.state[automation.trigger.sensorType];
-            if (sensorValue != null) {
-              shouldExecute = _evaluateCondition(sensorValue, automation.trigger.value, automation.condition);
-            }
-          }
+          conditionMet = _evaluateSensorCondition(condition);
+          break;
+        case 'device':
+          conditionMet = _evaluateDeviceCondition(condition);
           break;
       }
-
-      if (shouldExecute && _checkCondition(automation.condition)) {
-        _executeAction(automation.action);
-      }
+      
+      results.add(conditionMet);
     }
+
+    // Apply operator logic
+    if (conditions.operator == 'AND') {
+      return results.every((result) => result);
+    } else if (conditions.operator == 'OR') {
+      return results.any((result) => result);
+    }
+    
+    return false;
   }
 
-  bool _evaluateCondition(dynamic sensorValue, String triggerValue, Condition? condition) {
-    if (condition == null) return true;
-
-    final targetValue = double.tryParse(triggerValue) ?? 0.0;
-    final sensorNum = sensorValue is num ? sensorValue.toDouble() : double.tryParse(sensorValue.toString()) ?? 0.0;
-
-    switch (condition.operator) {
+  bool _evaluateTimeCondition(ConditionChild condition, String currentTime) {
+    final String targetTime = condition.value?.toString() ?? '00:00';
+    final String op = condition.op ?? '==';
+    
+    switch (op) {
       case '>':
-        return sensorNum > targetValue;
+        return currentTime.compareTo(targetTime) > 0;
       case '<':
-        return sensorNum < targetValue;
-      case '>=':
-        return sensorNum >= targetValue;
-      case '<=':
-        return sensorNum <= targetValue;
+        return currentTime.compareTo(targetTime) < 0;
       case '==':
-        return sensorNum == targetValue;
-      case '!=':
-        return sensorNum != targetValue;
+        return currentTime == targetTime;
       default:
         return false;
     }
   }
 
-  bool _checkCondition(Condition? condition) {
-    if (condition == null) return true;
-
-    final device = deviceProvider.getDeviceById(condition.deviceId);
+  bool _evaluateSensorCondition(ConditionChild condition) {
+    if (condition.deviceId == null) return false;
+    
+    final device = deviceProvider.getDeviceById(condition.deviceId!);
     if (device == null) return false;
 
-    switch (condition.type) {
-      case 'device_state':
-        return device.isOn == (condition.value == 'true');
-      case 'sensor_value':
-        final sensorValue = device.state[condition.sensorType];
-        if (sensorValue != null) {
-          return _evaluateCondition(sensorValue, condition.value.toString(), condition);
-        }
-        return false;
+    final sensorValue = device.state[condition.key];
+    if (sensorValue == null) return false;
+
+    final targetValue = condition.value;
+    if (targetValue == null) return false;
+
+    return _evaluateComparison(sensorValue, condition.op ?? '>', targetValue);
+  }
+
+  bool _evaluateDeviceCondition(ConditionChild condition) {
+    if (condition.deviceId == null) return false;
+    
+    final device = deviceProvider.getDeviceById(condition.deviceId!);
+    if (device == null) return false;
+
+    // For device state changes, this would need more complex logic
+    // For now, just check if device is on/off
+    return device.isOn;
+  }
+
+  bool _evaluateComparison(dynamic sensorValue, String op, dynamic targetValue) {
+    final sensorNum = sensorValue is num ? sensorValue.toDouble() : double.tryParse(sensorValue.toString()) ?? 0.0;
+    final targetNum = targetValue is num ? targetValue.toDouble() : double.tryParse(targetValue.toString()) ?? 0.0;
+
+    switch (op) {
+      case '>':
+        return sensorNum > targetNum;
+      case '<':
+        return sensorNum < targetNum;
+      case '>=':
+        return sensorNum >= targetNum;
+      case '<=':
+        return sensorNum <= targetNum;
+      case '==':
+        return sensorNum == targetNum;
+      case '!=':
+        return sensorNum != targetNum;
       default:
-        return true;
+        return false;
     }
   }
 
-  void _executeAction(AutomationAction action) {
-    switch (action.type) {
-      case 'device_toggle':
-        final isOn = action.value == true || action.value == 'true';
+  void _executeActions(List<RuleAction> actions) {
+    for (final action in actions) {
+      _executeAction(action);
+    }
+  }
+
+  void _executeAction(RuleAction action) {
+    switch (action.action) {
+      case 'set_state':
+        final isOn = action.params['on'] == true;
         deviceProvider.toggleDevice(action.deviceId, isOn);
         break;
-      case 'device_set_value':
-        // For thermostat, set temperature
-        if (action.value is num) {
-          deviceProvider.updateSensorValue(action.deviceId, 'temperature', action.value);
-        }
+      case 'set_brightness':
+        // For brightness control
+        final brightness = action.params['brightness'] as int? ?? 100;
+        _logger.i('Setting brightness to $brightness for device ${action.deviceId}');
+        // TODO: Implement brightness control in device provider
         break;
-      case 'notification':
-        // For now, just log notification. In real app, show notification
-        _logger.i('NOTIFICATION: ${action.value}');
+      case 'set_temperature':
+        final temperature = action.params['temperature'] as double? ?? 20.0;
+        deviceProvider.updateSensorValue(action.deviceId, 'temperature', temperature);
         break;
+      case 'set_color':
+        final color = action.params['color'] as String? ?? '#FFFFFF';
+        _logger.i('Setting color to $color for device ${action.deviceId}');
+        // TODO: Implement color control in device provider
+        break;
+      case 'send_notification':
+        final message = action.params['message'] as String? ?? '';
+        final title = action.params['title'] as String? ?? 'Smart Home';
+        _logger.i('NOTIFICATION: $title - $message');
+        // TODO: Implement actual notification system
+        break;
+      case 'delay':
+        final seconds = action.params['seconds'] as int? ?? 5;
+        _logger.i('Delaying $seconds seconds');
+        // TODO: Implement proper delay handling
+        break;
+      default:
+        _logger.w('Unknown action type: ${action.action}');
     }
   }
 

@@ -5,7 +5,6 @@ import '../../../core/providers/device_provider.dart';
 import '../models/rule.dart';
 import '../widgets/condition_builder.dart';
 import '../widgets/action_builder.dart';
-import '../widgets/automation_preview.dart';
 
 class AddAutomationPage extends StatefulWidget {
   final Rule? automation;
@@ -33,7 +32,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
       actions = widget.automation!.actions.map((action) => {
         'action': action.action,
         'params': Map<String, dynamic>.from(action.params),
-        'device_id': action.deviceId.toString(), // Ensure device_id is always a string
+        'device_id': action.deviceId,
       }).toList();
     } else {
       // Initialize with default structure
@@ -66,9 +65,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
       'children': conditions.children.map((child) => {
         'type': child.type,
         'op': child.op,
-        'value': child.value, // Keep as dynamic since it can be int, double, or string
+        'value': child.value,
         'key': child.key,
-        'deviceId': child.deviceId?.toString() ?? '', // Ensure deviceId is always a string
+        'deviceId': child.deviceId,
         'minChange': child.minChange,
       }).toList(),
     };
@@ -143,13 +142,6 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                     'name': device.name,
                     'type': device.type,
                   }).toList(),
-                ),
-                const SizedBox(height: 24),
-
-                // Preview
-                AutomationPreviewWidget(
-                  conditions: conditions,
-                  actions: actions,
                 ),
                 const SizedBox(height: 32),
 

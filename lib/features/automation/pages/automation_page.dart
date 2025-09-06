@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smarthome_mobile/features/automation/widgets/rule_list.dart';
+import '../widgets/automation_list.dart';
 import 'add_automation_page.dart';
 
 class AutomationPage extends StatelessWidget {
@@ -10,7 +10,7 @@ class AutomationPage extends StatelessWidget {
     return Column(
       children: [
         const Expanded(
-          child: RuleList(),
+          child: AutomationList(),
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),

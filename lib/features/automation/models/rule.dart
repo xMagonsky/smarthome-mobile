@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 class Rule {
   final String id;
   final String name;
   final Conditions conditions;
   final List<RuleAction> actions;
   final bool enabled;
-  final String ownerId;
+  final String? ownerId;
 
   Rule({
     required this.id,
@@ -12,20 +14,37 @@ class Rule {
     required this.conditions,
     required this.actions,
     required this.enabled,
-    required this.ownerId,
+    this.ownerId,
   });
 
   factory Rule.fromJson(Map<String, dynamic> json) {
     return Rule(
-      id: json['id'],
-      name: json['name'],
-      conditions: Conditions.fromJson(json['conditions']),
-      actions: (json['actions'] as List)
-          .map((action) => RuleAction.fromJson(action))
-          .toList(),
-      enabled: json['enabled'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      conditions: json['conditions'] is String 
+          ? Conditions.fromJson(jsonDecode(json['conditions']))
+          : Conditions.fromJson(json['conditions']),
+      actions: json['actions'] is String
+          ? (jsonDecode(json['actions']) as List)
+              .map((action) => RuleAction.fromJson(action))
+              .toList()
+          : (json['actions'] as List)
+              .map((action) => RuleAction.fromJson(action))
+              .toList(),
+      enabled: json['enabled'] ?? false,
       ownerId: json['owner_id'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'conditions': conditions.toJson(),
+      'actions': actions.map((action) => action.toJson()).toList(),
+      'enabled': enabled,
+      'owner_id': ownerId,
+    };
   }
 
   @override
@@ -47,6 +66,13 @@ class Conditions {
           .map((child) => ConditionChild.fromJson(child))
           .toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'operator': operator,
+      'children': children.map((child) => child.toJson()).toList(),
+    };
   }
 
   @override
@@ -78,9 +104,23 @@ class ConditionChild {
       op: json['op'],
       value: json['value'],
       key: json['key'],
-      deviceId: json['device_id'],
+      deviceId: json['device_id']?.toString(),
       minChange: json['min_change']?.toDouble(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> json = {
+      'type': type,
+    };
+    
+    if (op != null) json['op'] = op;
+    if (value != null) json['value'] = value;
+    if (key != null) json['key'] = key;
+    if (deviceId != null) json['device_id'] = deviceId;
+    if (minChange != null) json['min_change'] = minChange;
+    
+    return json;
   }
 
   @override
@@ -104,8 +144,16 @@ class RuleAction {
     return RuleAction(
       action: json['action'],
       params: json['params'],
-      deviceId: json['device_id'],
+      deviceId: json['device_id']?.toString() ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'action': action,
+      'params': params,
+      'device_id': deviceId,
+    };
   }
 
   @override

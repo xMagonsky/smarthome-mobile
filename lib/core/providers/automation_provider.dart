@@ -1,84 +1,108 @@
 import 'package:flutter/material.dart';
-import '../../features/automation/models/automation.dart';
+import '../../features/automation/models/rule.dart';
+import '../services/automation_api_service.dart';
 
 class AutomationProvider extends ChangeNotifier {
-  List<Automation> automations = [];
+  List<Rule> automations = [];
+  final AutomationApiService _apiService;
+  bool isLoading = false;
+  String? errorMessage;
 
-  AutomationProvider() {
-    loadAutomations();
-  }
+  AutomationProvider({required AutomationApiService apiService}) : _apiService = apiService;
 
-  void loadAutomations() {
-    // Mock data; replace with repository call in future
-    automations = [
-      Automation(
-        id: '1',
-        name: 'Evening Lights',
-        trigger: Trigger(
-          type: 'time',
-          value: '18:00',
-          description: 'Daily at 6:00 PM',
-        ),
-        action: AutomationAction(
-          type: 'device_toggle',
-          deviceId: '1',
-          value: true,
-          description: 'Turn on Living Room Light',
-        ),
-      ),
-      Automation(
-        id: '2',
-        name: 'Temperature Control',
-        trigger: Trigger(
-          type: 'sensor',
-          value: '4', // Outdoor Temperature Sensor
-          sensorType: 'temperature',
-          description: 'When outdoor temperature > 25°C',
-        ),
-        condition: Condition(
-          type: 'sensor_value',
-          deviceId: '4',
-          sensorType: 'temperature',
-          operator: '>',
-          value: 25,
-          description: 'Outdoor temperature > 25°C',
-        ),
-        action: AutomationAction(
-          type: 'device_toggle',
-          deviceId: '3', // Bedroom Thermostat
-          value: true,
-          description: 'Turn on air conditioning',
-        ),
-      ),
-    ];
+  Future<void> loadAutomations() async {
+    isLoading = true;
+    errorMessage = null;
     notifyListeners();
-  }
 
-  void addAutomation(Automation automation) {
-    automations.add(automation);
-    notifyListeners();
-    // In future: Save to database/API
-  }
-
-  void removeAutomation(String id) {
-    automations.removeWhere((a) => a.id == id);
-    notifyListeners();
-    // In future: Delete from database/API
-  }
-
-  void toggleAutomation(String id, bool isEnabled) {
-    final index = automations.indexWhere((a) => a.id == id);
-    if (index != -1) {
-      automations[index] = Automation(
-        id: automations[index].id,
-        name: automations[index].name,
-        trigger: automations[index].trigger,
-        condition: automations[index].condition,
-        action: automations[index].action,
-        isEnabled: isEnabled,
-      );
+    try {
+      automations = await _apiService.getAutomations();
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
       notifyListeners();
-      // In future: Update in database/API
+    }
+  }
+
+  Future<void> addAutomation(String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final newAutomation = await _apiService.createAutomation(name, conditions, actions);
+      automations.add(newAutomation);
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateAutomation(String id, String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedAutomation = await _apiService.updateAutomation(id, name, conditions, actions);
+      final index = automations.indexWhere((a) => a.id == id);
+      if (index != -1) {
+        automations[index] = updatedAutomation;
+      }
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeAutomation(String id) async {
+    isLoading = true;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.deleteAutomation(id);
+      automations.removeWhere((a) => a.id == id);
+    } catch (e) {
+      errorMessage = e.toString();
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> toggleAutomation(String id, bool isEnabled) async {
+    try {
+      await _apiService.toggleAutomation(id, isEnabled);
+      final index = automations.indexWhere((a) => a.id == id);
+      if (index != -1) {
+        final oldRule = automations[index];
+        automations[index] = Rule(
+          id: oldRule.id,
+          name: oldRule.name,
+          conditions: oldRule.conditions,
+          actions: oldRule.actions,
+          enabled: isEnabled,
+          ownerId: oldRule.ownerId,
+        );
+        notifyListeners();
+      }
+    } catch (e) {
+      errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Rule? getAutomationById(String id) {
+    try {
+      return automations.firstWhere((a) => a.id == id);
+    } catch (e) {
+      return null;
     }
   }
 }

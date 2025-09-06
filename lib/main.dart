@@ -8,6 +8,8 @@ import 'core/providers/automation_provider.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/providers/auth_provider.dart';
 import 'core/services/automation_service.dart';
+import 'core/services/automation_api_service.dart';
+import 'core/config/api_config.dart';
 import 'features/home/pages/home_page.dart';
 import 'features/automation/pages/automation_page.dart';
 import 'features/settings/pages/settings_page.dart';
@@ -69,10 +71,13 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Create the API service first
+    final automationApiService = AutomationApiService(baseUrl: ApiConfig.baseUrl);
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
-        ChangeNotifierProvider(create: (_) => AutomationProvider()),
+        ChangeNotifierProvider(create: (_) => AutomationProvider(apiService: automationApiService)),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => RuleProvider()),
