@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smarthome_mobile/features/devices/models/device.dart';
 
 class ActionBuilder extends StatefulWidget {
   final List<Map<String, dynamic>> initialActions;
   final Function(List<Map<String, dynamic>>) onChanged;
-  final List<dynamic> devices;
+  final List<Device> devices;
 
   const ActionBuilder({
     super.key,
@@ -18,7 +19,7 @@ class ActionBuilder extends StatefulWidget {
 
 class _ActionBuilderState extends State<ActionBuilder> {
   late List<Map<String, dynamic>> actions;
-  late List<dynamic> _lightDevices;
+  late List<Device> _lightDevices;
 
   @override
   void initState() {
@@ -27,7 +28,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     if (actions.isEmpty) {
       actions = [_createEmptyAction()];
     }
-    _lightDevices = widget.devices.where((d) => d['type'] == 'light').toList();
+    _lightDevices = widget.devices.where((d) => d.type == 'light').toList();
   }
 
   Map<String, dynamic> _createEmptyAction() {
@@ -42,7 +43,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
   void didUpdateWidget(covariant ActionBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.devices != oldWidget.devices) {
-      _lightDevices = widget.devices.where((d) => d['type'] == 'light').toList();
+      _lightDevices = widget.devices.where((d) => d.type == 'light').toList();
     }
   }
 
@@ -90,17 +91,16 @@ class _ActionBuilderState extends State<ActionBuilder> {
         }),
         
         // Add action button
-        if (_lightDevices.isNotEmpty)
-          ElevatedButton.icon(
-            onPressed: () {
-              setState(() {
-                actions.add(_createEmptyAction());
-                _notifyChange();
-              });
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('Add Action'),
-          ),
+        ElevatedButton.icon(
+          onPressed: () {
+            setState(() {
+              actions.add(_createEmptyAction());
+              _notifyChange();
+            });
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Add Action'),
+        ),
       ],
     );
   }
@@ -120,13 +120,13 @@ class _ActionBuilderState extends State<ActionBuilder> {
     } else {
       items = _lightDevices.map((device) {
         return DropdownMenuItem<String>(
-          value: device['id']?.toString() ?? '',
-          child: Text(device['name'] ?? 'Unknown Light'),
+          value: device.id,
+          child: Text(device.name),
         );
       }).toList();
 
       if (dropdownValue == null ||
-          !_lightDevices.any((d) => d['id']?.toString() == dropdownValue)) {
+          !_lightDevices.any((d) => d.id == dropdownValue)) {
         dropdownValue = null;
       }
     }
@@ -137,7 +137,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     return Column(
       children: [
         DropdownButtonFormField<String>(
-          initialValue: dropdownValue,
+          value: dropdownValue,
           hint: const Text('Select device'),
           decoration: const InputDecoration(
             labelText: 'Target Device',
@@ -192,7 +192,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
 
   void _notifyChange() {
     final validActions = actions
-        .where((a) => a['device_id'] != null && a['device_id'].isNotEmpty)
+        .where((a) => a['device_id'] != null && (a['device_id'] as String).isNotEmpty)
         .toList();
     widget.onChanged(validActions);
   }
@@ -203,7 +203,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     }
     
     // Check if the deviceId exists in the available devices
-    final deviceExists = _lightDevices.any((device) => device['id']?.toString() == deviceId);
+    final deviceExists = _lightDevices.any((device) => device.id == deviceId);
     return deviceExists ? deviceId : '';
   }
 }

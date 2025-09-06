@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:smarthome_mobile/features/devices/models/device.dart';
 
 class ConditionBuilder extends StatefulWidget {
   final Map<String, dynamic> initialConditions;
   final Function(Map<String, dynamic>) onChanged;
-  final List<dynamic> devices;
+  final List<Device> devices;
 
   const ConditionBuilder({
     super.key,
@@ -37,8 +38,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
       'op': '>',
       'value': 0,
       'key': 'temperature',
-      'deviceId': '',
-      'minChange': 0.1,
+      'device_id': '',
+      'min_change': 0.1,
     };
   }
 
@@ -78,7 +79,9 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   ],
                   onChanged: (value) {
                     setState(() {
-                      group['operator'] = value!;
+                      if (value != null) {
+                        group['operator'] = value;
+                      }
                       _notifyChange();
                     });
                   },
@@ -153,6 +156,20 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
   }
 
   Widget _buildSingleCondition(Map<String, dynamic> condition, int index, List<dynamic> siblings) {
+    final sensorDevices = widget.devices.where((d) => d.type == 'sensor').toList();
+    
+    final deviceId = condition['device_id'] as String?;
+    final Device? selectedDevice = deviceId != null && deviceId.isNotEmpty
+        ? sensorDevices.cast<Device?>().firstWhere(
+            (d) => d?.id == deviceId,
+            orElse: () => null,
+          )
+        : null;
+
+    final sensorKeys = selectedDevice != null
+        ? selectedDevice.state.keys.toList()
+        : <String>[];
+
     return Card(
       color: Colors.grey[100],
       child: Padding(
@@ -162,7 +179,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
           children: [
             // Condition type
             DropdownButtonFormField<String>(
-              initialValue: condition['type'] ?? 'sensor',
+              value: condition['type'] ?? 'sensor',
               decoration: const InputDecoration(
                 labelText: 'Type',
                 border: OutlineInputBorder(),
@@ -170,28 +187,22 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               items: const [
                 DropdownMenuItem(value: 'sensor', child: Text('Sensor')),
                 DropdownMenuItem(value: 'time', child: Text('Time')),
-                DropdownMenuItem(value: 'device', child: Text('Device State')),
               ],
               onChanged: (value) {
                 setState(() {
                   condition['type'] = value!;
                   if (value == 'time') {
-                    condition.remove('deviceId');
+                    condition.remove('device_id');
                     condition.remove('key');
-                    condition.remove('minChange');
+                    condition.remove('min_change');
                     condition['value'] = condition['value'] ?? '12:00';
                   } else if (value == 'sensor') {
-                    condition['deviceId'] = condition['deviceId'] ?? '';
-                    condition['key'] = condition['key'] ?? 'temperature';
-                    condition['minChange'] = condition['minChange'] ?? 0.1;
+                    condition['device_id'] = condition['device_id'] ?? '';
+                    if (condition['key'] == null) {
+                      condition.remove('key');
+                    }
+                    condition['min_change'] = condition['min_change'] ?? 0.1;
                     condition['value'] = condition['value'] ?? 25;
-                  } else if (value == 'device') {
-                    condition['deviceId'] = condition['deviceId'] ?? '';
-                    condition.remove('key');
-                    condition.remove('minChange');
-                    condition['value'] = condition['value']?.toString() == 'true' || condition['value']?.toString() == 'false' 
-                        ? condition['value'].toString() 
-                        : 'true';
                   }
                   _notifyChange();
                 });
@@ -203,7 +214,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             if (condition['type'] == 'sensor') ...[
               // Device selection
               DropdownButtonFormField<String>(
-                initialValue: _getValidDeviceId(condition['deviceId']?.toString()),
+                value: _getValidDeviceId(condition['device_id']?.toString(), sensorDevices),
                 decoration: const InputDecoration(
                   labelText: 'Device',
                   border: OutlineInputBorder(),
@@ -213,111 +224,106 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                     value: '',
                     child: Text('Select Device'),
                   ),
-                  ...widget.devices.map((device) {
+                  ...sensorDevices.map((device) {
                     return DropdownMenuItem<String>(
-                      value: device['id']?.toString() ?? '',
-                      child: Text(device['name'] ?? 'Unknown Device'),
+                      value: device.id,
+                      child: Text(device.name),
                     );
                   }),
                 ],
                 onChanged: (value) {
                   setState(() {
-                    condition['deviceId'] = value ?? '';
+                    condition['device_id'] = value ?? '';
+                    condition.remove('key');
                     _notifyChange();
                   });
                 },
               ),
-              const SizedBox(height: 8),
               
-              // Sensor key
-              DropdownButtonFormField<String>(
-                initialValue: condition['key'] ?? 'temperature',
-                decoration: const InputDecoration(
-                  labelText: 'Sensor Type',
-                  border: OutlineInputBorder(),
+              if (selectedDevice != null) ...[
+                const SizedBox(height: 8),
+                
+                // Sensor key
+                DropdownButtonFormField<String>(
+                  value: sensorKeys.contains(condition['key']) ? condition['key'] : null,
+                  decoration: const InputDecoration(
+                    labelText: 'Sensor Type',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: sensorKeys.map((key) {
+                    return DropdownMenuItem<String>(
+                      value: key,
+                      child: Text(key),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value != null) {
+                        condition['key'] = value;
+                      } else {
+                        condition.remove('key');
+                      }
+                      _notifyChange();
+                    });
+                  },
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'temperature', child: Text('Temperature')),
-                  DropdownMenuItem(value: 'humidity', child: Text('Humidity')),
-                  DropdownMenuItem(value: 'pressure', child: Text('Pressure')),
-                  DropdownMenuItem(value: 'motion', child: Text('Motion')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    condition['key'] = value;
-                    _notifyChange();
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
-              
-              // Operator and value
-              Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: DropdownButtonFormField<String>(
-                      initialValue: condition['op'] ?? '>',
-                      decoration: const InputDecoration(
-                        labelText: 'Op',
-                        border: OutlineInputBorder(),
+                const SizedBox(height: 8),
+                
+                // Operator and value
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: DropdownButtonFormField<String>(
+                        value: condition['op'] ?? '>',
+                        decoration: const InputDecoration(
+                          labelText: 'Op',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: '>', child: Text('>')),
+                          DropdownMenuItem(value: '<', child: Text('<')),
+                          DropdownMenuItem(value: '>=', child: Text('>=')),
+                          DropdownMenuItem(value: '<=', child: Text('<=')),
+                          DropdownMenuItem(value: '==', child: Text('==')),
+                          DropdownMenuItem(value: '!=', child: Text('!=')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            if (value != null) {
+                              condition['op'] = value;
+                            }
+                            _notifyChange();
+                          });
+                        },
                       ),
-                      items: const [
-                        DropdownMenuItem(value: '>', child: Text('>')),
-                        DropdownMenuItem(value: '<', child: Text('<')),
-                        DropdownMenuItem(value: '>=', child: Text('>=')),
-                        DropdownMenuItem(value: '<=', child: Text('<=')),
-                        DropdownMenuItem(value: '==', child: Text('==')),
-                        DropdownMenuItem(value: '!=', child: Text('!=')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          condition['op'] = value;
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        initialValue: condition['value']?.toString() ?? '0',
+                        decoration: const InputDecoration(
+                          labelText: 'Value',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          condition['value'] = double.tryParse(value) ?? 0;
                           _notifyChange();
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: condition['value']?.toString() ?? '0',
-                      decoration: const InputDecoration(
-                        labelText: 'Value',
-                        border: OutlineInputBorder(),
+                        },
                       ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        condition['value'] = double.tryParse(value) ?? 0;
-                        _notifyChange();
-                      },
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              
-              // Min change
-              TextFormField(
-                initialValue: condition['minChange']?.toString() ?? '0.1',
-                decoration: const InputDecoration(
-                  labelText: 'Min Change',
-                  border: OutlineInputBorder(),
+                  ],
                 ),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  condition['minChange'] = double.tryParse(value) ?? 0.1;
-                  _notifyChange();
-                },
-              ),
+              ],
             ] else if (condition['type'] == 'time') ...[
               Row(
                 children: [
                   Expanded(
                     flex: 1,
                     child: DropdownButtonFormField<String>(
-                      initialValue: condition['op'] ?? '>',
+                      value: condition['op'] ?? '>',
                       decoration: const InputDecoration(
                         labelText: 'Op',
                         border: OutlineInputBorder(),
@@ -329,7 +335,9 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       ],
                       onChanged: (value) {
                         setState(() {
-                          condition['op'] = value;
+                          if (value != null) {
+                            condition['op'] = value;
+                          }
                           _notifyChange();
                         });
                       },
@@ -352,53 +360,6 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   ),
                 ],
               ),
-            ] else if (condition['type'] == 'device') ...[
-              // Device selection for device state condition
-              DropdownButtonFormField<String>(
-                initialValue: _getValidDeviceId(condition['deviceId']?.toString()),
-                decoration: const InputDecoration(
-                  labelText: 'Device',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: '',
-                    child: Text('Select Device'),
-                  ),
-                  ...widget.devices.map((device) {
-                    return DropdownMenuItem<String>(
-                      value: device['id']?.toString() ?? '',
-                      child: Text(device['name'] ?? 'Unknown Device'),
-                    );
-                  }),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    condition['deviceId'] = value ?? '';
-                    _notifyChange();
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
-              
-              // Device state selection
-              DropdownButtonFormField<String>(
-                initialValue: condition['value']?.toString() ?? 'true',
-                decoration: const InputDecoration(
-                  labelText: 'State',
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'true', child: Text('On')),
-                  DropdownMenuItem(value: 'false', child: Text('Off')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    condition['value'] = value ?? 'true';
-                    _notifyChange();
-                  });
-                },
-              ),
             ],
           ],
         ),
@@ -410,13 +371,13 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
     widget.onChanged(conditions);
   }
 
-  String? _getValidDeviceId(String? deviceId) {
+  String? _getValidDeviceId(String? deviceId, List<Device> devices) {
     if (deviceId == null || deviceId.isEmpty) {
       return '';
     }
     
     // Check if the deviceId exists in the available devices
-    final deviceExists = widget.devices.any((device) => device['id']?.toString() == deviceId);
+    final deviceExists = devices.any((device) => device.id == deviceId);
     return deviceExists ? deviceId : '';
   }
 }

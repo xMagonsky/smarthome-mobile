@@ -86,16 +86,16 @@ class ConditionChild {
   final String? op;
   final dynamic value;
   final String? key;
-  final String? deviceId;
-  final double? minChange;
+  final String? device_id;
+  final double? min_change;
 
   ConditionChild({
     required this.type,
     this.op,
     this.value,
     this.key,
-    this.deviceId,
-    this.minChange,
+    this.device_id,
+    this.min_change,
   });
 
   factory ConditionChild.fromJson(Map<String, dynamic> json) {
@@ -104,8 +104,8 @@ class ConditionChild {
       op: json['op'],
       value: json['value'],
       key: json['key'],
-      deviceId: json['device_id']?.toString(),
-      minChange: json['min_change']?.toDouble(),
+      device_id: json['device_id']?.toString(),
+      min_change: json['min_change']?.toDouble(),
     );
   }
 
@@ -117,34 +117,34 @@ class ConditionChild {
     if (op != null) json['op'] = op;
     if (value != null) json['value'] = value;
     if (key != null) json['key'] = key;
-    if (deviceId != null) json['device_id'] = deviceId;
-    if (minChange != null) json['min_change'] = minChange;
+    if (device_id != null) json['device_id'] = device_id;
+    if (min_change != null) json['min_change'] = min_change;
     
     return json;
   }
 
   @override
   String toString() {
-    return 'ConditionChild{type: $type, op: $op, value: $value, key: $key, deviceId: $deviceId, minChange: $minChange}';
+    return 'ConditionChild{type: $type, op: $op, value: $value, key: $key, device_id: $device_id, min_change: $min_change}';
   }
 }
 
 class RuleAction {
   final String action;
   final Map<String, dynamic> params;
-  final String deviceId;
+  final String device_id;
 
   RuleAction({
     required this.action,
     required this.params,
-    required this.deviceId,
+    required this.device_id,
   });
 
   factory RuleAction.fromJson(Map<String, dynamic> json) {
     return RuleAction(
       action: json['action'],
       params: json['params'],
-      deviceId: json['device_id']?.toString() ?? '',
+      device_id: json['device_id']?.toString() ?? '',
     );
   }
 
@@ -152,12 +152,12 @@ class RuleAction {
     return {
       'action': action,
       'params': params,
-      'device_id': deviceId,
+      'device_id': device_id,
     };
   }
 
   @override
   String toString() {
-    return 'RuleAction{action: $action, params: $params, deviceId: $deviceId}';
+    return 'RuleAction{action: $action, params: $params, device_id: $device_id}';
   }
 }

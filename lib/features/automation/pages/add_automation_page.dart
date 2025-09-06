@@ -33,7 +33,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
       actions = widget.automation!.actions.map((action) => {
         'action': action.action,
         'params': Map<String, dynamic>.from(action.params),
-        'device_id': action.deviceId.toString(), // Ensure device_id is always a string
+        'device_id': action.device_id.toString(), // Ensure device_id is always a string
       }).toList();
     } else {
       // Initialize with default structure
@@ -43,10 +43,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
           {
             'type': 'sensor',
             'op': '>',
-            'value': 25,
+            'value': 0,
             'key': 'temperature',
-            'deviceId': '',
-            'minChange': 0.1,
+            'device_id': '',
           }
         ],
       };
@@ -68,8 +67,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
         'op': child.op,
         'value': child.value, // Keep as dynamic since it can be int, double, or string
         'key': child.key,
-        'deviceId': child.deviceId?.toString() ?? '', // Ensure deviceId is always a string
-        'minChange': child.minChange,
+        'device_id': child.device_id?.toString() ?? '', // Ensure deviceId is always a string
+        'min_change': child.min_change,
       }).toList(),
     };
   }
@@ -122,11 +121,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                       conditions = newConditions;
                     });
                   },
-                  devices: deviceProvider.devices.map((device) => {
-                    'id': device.id,
-                    'name': device.name,
-                    'type': device.type,
-                  }).toList(),
+                  devices: deviceProvider.devices,
                 ),
                 const SizedBox(height: 24),
 
@@ -138,11 +133,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                       actions = newActions;
                     });
                   },
-                  devices: deviceProvider.devices.map((device) => {
-                    'id': device.id,
-                    'name': device.name,
-                    'type': device.type,
-                  }).toList(),
+                  devices: deviceProvider.devices,
                 ),
                 const SizedBox(height: 24),
 
@@ -282,8 +273,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
     for (final child in children) {
       if (child is Map<String, dynamic>) {
-        if (child['type'] == 'sensor' || child['type'] == 'device') {
-          if (child['deviceId'] == null || child['deviceId'].toString().isEmpty) {
+        if (child['type'] == 'sensor') {
+          if (child['device_id'] == null || child['device_id'].toString().isEmpty) {
             return false;
           }
         }
