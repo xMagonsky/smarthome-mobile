@@ -18,6 +18,7 @@ class ActionBuilder extends StatefulWidget {
 
 class _ActionBuilderState extends State<ActionBuilder> {
   late List<Map<String, dynamic>> actions;
+  late List<dynamic> _lightDevices;
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     if (actions.isEmpty) {
       actions = [_createEmptyAction()];
     }
+    _lightDevices = widget.devices.where((d) => d['type'] == 'light').toList();
   }
 
   Map<String, dynamic> _createEmptyAction() {
@@ -34,6 +36,14 @@ class _ActionBuilderState extends State<ActionBuilder> {
       'params': {'on': false},
       'device_id': '',
     };
+  }
+
+  @override
+  void didUpdateWidget(covariant ActionBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.devices != oldWidget.devices) {
+      _lightDevices = widget.devices.where((d) => d['type'] == 'light').toList();
+    }
   }
 
   @override
@@ -95,209 +105,33 @@ class _ActionBuilderState extends State<ActionBuilder> {
   }
 
   Widget _buildActionFields(Map<String, dynamic> action) {
-    return Column(
-      children: [
-        // Action type
-        DropdownButtonFormField<String>(
-          initialValue: action['action'] ?? 'set_state',
-          decoration: const InputDecoration(
-            labelText: 'Action Type',
-            border: OutlineInputBorder(),
-          ),
-          items: const [
-            DropdownMenuItem(value: 'set_state', child: Text('Set Device State')),
-            DropdownMenuItem(value: 'set_brightness', child: Text('Set Brightness')),
-            DropdownMenuItem(value: 'set_temperature', child: Text('Set Temperature')),
-            DropdownMenuItem(value: 'set_color', child: Text('Set Color')),
-            DropdownMenuItem(value: 'send_notification', child: Text('Send Notification')),
-            DropdownMenuItem(value: 'delay', child: Text('Delay')),
-          ],
-          onChanged: (value) {
-            setState(() {
-              action['action'] = value!;
-              // Reset params when action type changes
-              switch (value) {
-                case 'set_state':
-                  action['params'] = {'on': false};
-                  break;
-                case 'set_brightness':
-                  action['params'] = {'brightness': 100};
-                  break;
-                case 'set_temperature':
-                  action['params'] = {'temperature': 20};
-                  break;
-                case 'set_color':
-                  action['params'] = {'color': '#FFFFFF'};
-                  break;
-                case 'send_notification':
-                  action['params'] = {'message': '', 'title': ''};
-                  action['device_id'] = ''; // No device needed for notifications
-                  break;
-                case 'delay':
-                  action['params'] = {'seconds': 5};
-                  action['device_id'] = ''; // No device needed for delays
-                  break;
-              }
-              _notifyChange();
-            });
-          },
+    return DropdownButtonFormField<String>(
+      value: _getValidDeviceId(action['device_id']?.toString()),
+      decoration: const InputDecoration(
+        labelText: 'Target Light',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        const DropdownMenuItem<String>(
+          value: '',
+          child: Text('Select Light'),
         ),
-        const SizedBox(height: 12),
-        
-        // Device selection (if needed)
-        if (action['action'] != 'send_notification' && action['action'] != 'delay')
-          DropdownButtonFormField<String>(
-            initialValue: _getValidDeviceId(action['device_id']?.toString()),
-            decoration: const InputDecoration(
-              labelText: 'Target Device',
-              border: OutlineInputBorder(),
-            ),
-            items: [
-              const DropdownMenuItem<String>(
-                value: '',
-                child: Text('Select Device'),
-              ),
-              ...widget.devices.map((device) {
-                return DropdownMenuItem<String>(
-                  value: device['id']?.toString() ?? '',
-                  child: Text(device['name'] ?? 'Unknown Device'),
-                );
-              }),
-            ],
-            onChanged: (value) {
-              setState(() {
-                action['device_id'] = value ?? '';
-                _notifyChange();
-              });
-            },
-          ),
-        
-        if (action['action'] != 'send_notification' && action['action'] != 'delay')
-          const SizedBox(height: 12),
-        
-        // Parameters based on action type
-        ..._buildParameterFields(action),
+        ..._lightDevices.map((device) {
+          return DropdownMenuItem<String>(
+            value: device['id']?.toString() ?? '',
+            child: Text(device['name'] ?? 'Unknown Light'),
+          );
+        }),
       ],
+      onChanged: (value) {
+        setState(() {
+          action['device_id'] = value ?? '';
+          action['action'] = 'set_state';
+          action['params'] = {'on': true};
+          _notifyChange();
+        });
+      },
     );
-  }
-
-  List<Widget> _buildParameterFields(Map<String, dynamic> action) {
-    final params = action['params'] as Map<String, dynamic>? ?? {};
-    final actionType = action['action'] ?? 'set_state';
-    
-    switch (actionType) {
-      case 'set_state':
-        return [
-          SwitchListTile(
-            title: const Text('Turn On'),
-            value: params['on'] == true,
-            onChanged: (value) {
-              setState(() {
-                params['on'] = value;
-                _notifyChange();
-              });
-            },
-          ),
-        ];
-        
-      case 'set_brightness':
-        return [
-          TextFormField(
-            initialValue: params['brightness']?.toString() ?? '100',
-            decoration: const InputDecoration(
-              labelText: 'Brightness (0-100)',
-              border: OutlineInputBorder(),
-              suffixText: '%',
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              final brightness = int.tryParse(value) ?? 100;
-              params['brightness'] = brightness.clamp(0, 100);
-              _notifyChange();
-            },
-          ),
-        ];
-        
-      case 'set_temperature':
-        return [
-          TextFormField(
-            initialValue: params['temperature']?.toString() ?? '20',
-            decoration: const InputDecoration(
-              labelText: 'Temperature',
-              border: OutlineInputBorder(),
-              suffixText: '°C',
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              params['temperature'] = double.tryParse(value) ?? 20.0;
-              _notifyChange();
-            },
-          ),
-        ];
-        
-      case 'set_color':
-        return [
-          TextFormField(
-            initialValue: params['color']?.toString() ?? '#FFFFFF',
-            decoration: const InputDecoration(
-              labelText: 'Color (Hex)',
-              border: OutlineInputBorder(),
-              hintText: '#FFFFFF',
-            ),
-            onChanged: (value) {
-              params['color'] = value;
-              _notifyChange();
-            },
-          ),
-        ];
-        
-      case 'send_notification':
-        return [
-          TextFormField(
-            initialValue: params['title']?.toString() ?? '',
-            decoration: const InputDecoration(
-              labelText: 'Notification Title',
-              border: OutlineInputBorder(),
-            ),
-            onChanged: (value) {
-              params['title'] = value;
-              _notifyChange();
-            },
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            initialValue: params['message']?.toString() ?? '',
-            decoration: const InputDecoration(
-              labelText: 'Notification Message',
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
-            onChanged: (value) {
-              params['message'] = value;
-              _notifyChange();
-            },
-          ),
-        ];
-        
-      case 'delay':
-        return [
-          TextFormField(
-            initialValue: params['seconds']?.toString() ?? '5',
-            decoration: const InputDecoration(
-              labelText: 'Delay (seconds)',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.number,
-            onChanged: (value) {
-              params['seconds'] = int.tryParse(value) ?? 5;
-              _notifyChange();
-            },
-          ),
-        ];
-        
-      default:
-        return [];
-    }
   }
 
   void _notifyChange() {
@@ -310,7 +144,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     }
     
     // Check if the deviceId exists in the available devices
-    final deviceExists = widget.devices.any((device) => device['id']?.toString() == deviceId);
+    final deviceExists = _lightDevices.any((device) => device['id']?.toString() == deviceId);
     return deviceExists ? deviceId : '';
   }
 }

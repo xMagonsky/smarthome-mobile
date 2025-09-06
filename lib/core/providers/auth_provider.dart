@@ -49,7 +49,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> register(String username, String password, String email) async {
     try {
       final response = await _apiService.register(username, password, email);
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonResponse = jsonDecode(response.body);
         _token = jsonResponse['token'];
         _apiService.setToken(_token!);
