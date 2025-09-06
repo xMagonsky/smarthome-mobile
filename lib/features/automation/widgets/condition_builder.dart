@@ -171,122 +171,333 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
         : <String>[];
 
     return Card(
-      color: Colors.grey[100],
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: Colors.grey[50],
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Condition type
-            DropdownButtonFormField<String>(
-              value: condition['type'] ?? 'sensor',
-              decoration: const InputDecoration(
-                labelText: 'Type',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: 'sensor', child: Text('Sensor')),
-                DropdownMenuItem(value: 'time', child: Text('Time')),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  condition['type'] = value!;
-                  if (value == 'time') {
-                    condition.remove('device_id');
-                    condition.remove('key');
-                    condition.remove('min_change');
-                    condition['value'] = condition['value'] ?? '12:00';
-                  } else if (value == 'sensor') {
-                    condition['device_id'] = condition['device_id'] ?? '';
-                    if (condition['key'] == null) {
+            SizedBox(
+              width: double.infinity,
+              child: DropdownButtonFormField<String>(
+                value: condition['type'] ?? 'sensor',
+                decoration: InputDecoration(
+                  labelText: 'Condition Type',
+                  labelStyle: TextStyle(
+                    color: Colors.indigo.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.indigo.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.indigo.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.indigo.shade600, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(
+                    Icons.category,
+                    color: Colors.indigo.shade400,
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'sensor', 
+                    child: Text('Sensor', style: TextStyle(fontSize: 14)),
+                  ),
+                  DropdownMenuItem(
+                    value: 'time', 
+                    child: Text('Time', style: TextStyle(fontSize: 14)),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    condition['type'] = value!;
+                    if (value == 'time') {
+                      condition.remove('device_id');
                       condition.remove('key');
+                      condition.remove('min_change');
+                      condition['value'] = condition['value'] ?? '12:00';
+                    } else if (value == 'sensor') {
+                      condition['device_id'] = condition['device_id'] ?? '';
+                      if (condition['key'] == null) {
+                        condition.remove('key');
+                      }
+                      condition['min_change'] = condition['min_change'] ?? 0.1;
+                      condition['value'] = condition['value'] ?? 25;
                     }
-                    condition['min_change'] = condition['min_change'] ?? 0.1;
-                    condition['value'] = condition['value'] ?? 25;
-                  }
-                  _notifyChange();
-                });
-              },
+                    _notifyChange();
+                  });
+                },
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             
             // Condition-specific fields
             if (condition['type'] == 'sensor') ...[
               // Device selection
               DropdownButtonFormField<String>(
                 value: _getValidDeviceId(condition['device_id']?.toString(), sensorDevices),
-                decoration: const InputDecoration(
+                hint: const Text('Select device', style: TextStyle(color: Colors.grey)),
+                decoration: InputDecoration(
                   labelText: 'Device',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: '',
-                    child: Text('Select Device'),
+                  labelStyle: TextStyle(
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.w600,
                   ),
-                  ...sensorDevices.map((device) {
-                    return DropdownMenuItem<String>(
-                      value: device.id,
-                      child: Text(device.name),
-                    );
-                  }),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    condition['device_id'] = value ?? '';
-                    condition.remove('key');
-                    _notifyChange();
-                  });
-                },
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.green.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.green.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(
+                    Icons.devices,
+                    color: Colors.green.shade400,
+                  ),
+                ),
+                items: sensorDevices.isEmpty
+                    ? [
+                        const DropdownMenuItem<String>(
+                          value: '',
+                          child: Text('No available devices', style: TextStyle(color: Colors.grey)),
+                        ),
+                      ]
+                    : sensorDevices.map((device) {
+                        return DropdownMenuItem<String>(
+                          value: device.id,
+                          child: Text(
+                            device.name,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                onChanged: sensorDevices.isEmpty
+                    ? null
+                    : (value) {
+                        setState(() {
+                          condition['device_id'] = value ?? '';
+                          condition.remove('key');
+                          _notifyChange();
+                        });
+                      },
               ),
+              const SizedBox(height: 16),
               
               if (selectedDevice != null) ...[
                 const SizedBox(height: 8),
                 
-                // Sensor key
-                DropdownButtonFormField<String>(
-                  value: sensorKeys.contains(condition['key']) ? condition['key'] : null,
-                  decoration: const InputDecoration(
-                    labelText: 'Sensor Type',
-                    border: OutlineInputBorder(),
+                // Sensor key, operator, and value in the same row
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.shade200),
                   ),
-                  items: sensorKeys.map((key) {
-                    return DropdownMenuItem<String>(
-                      value: key,
-                      child: Text(key),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value != null) {
-                        condition['key'] = value;
-                      } else {
-                        condition.remove('key');
-                      }
-                      _notifyChange();
-                    });
-                  },
+                  child: Row(
+                    children: [
+                      // Sensor Type
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          value: sensorKeys.contains(condition['key']) ? condition['key'] : null,
+                          decoration: InputDecoration(
+                            labelText: 'Sensor Type',
+                            labelStyle: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          items: sensorKeys.map((key) {
+                            return DropdownMenuItem<String>(
+                              value: key,
+                              child: Text(
+                                key.replaceAll('_', ' ').toUpperCase(),
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value != null) {
+                                condition['key'] = value;
+                              } else {
+                                condition.remove('key');
+                              }
+                              _notifyChange();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      
+                      // Operator
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          value: condition['op'] ?? '>',
+                          decoration: InputDecoration(
+                            labelText: 'Operator',
+                            labelStyle: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: '>', child: Text('>')),
+                            DropdownMenuItem(value: '<', child: Text('<')),
+                            DropdownMenuItem(value: '>=', child: Text('≥')),
+                            DropdownMenuItem(value: '<=', child: Text('≤')),
+                            DropdownMenuItem(value: '==', child: Text('=')),
+                            DropdownMenuItem(value: '!=', child: Text('≠')),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              if (value != null) {
+                                condition['op'] = value;
+                              }
+                              _notifyChange();
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      
+                      // Value
+                      Expanded(
+                        flex: 2,
+                        child: TextFormField(
+                          initialValue: condition['value']?.toString() ?? '0',
+                          decoration: InputDecoration(
+                            labelText: 'Value',
+                            labelStyle: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade300),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            suffixIcon: Icon(
+                              Icons.numbers,
+                              color: Colors.blue.shade400,
+                              size: 20,
+                            ),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          onChanged: (value) {
+                            condition['value'] = double.tryParse(value) ?? 0;
+                            _notifyChange();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                
-                // Operator and value
-                Row(
+              ],
+            ] else if (condition['type'] == 'time') ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
                   children: [
+                    // Time Operator
                     Expanded(
-                      flex: 1,
+                      flex: 2,
                       child: DropdownButtonFormField<String>(
                         value: condition['op'] ?? '>',
-                        decoration: const InputDecoration(
-                          labelText: 'Op',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: 'Time Condition',
+                          labelStyle: TextStyle(
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade600, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
                         items: const [
-                          DropdownMenuItem(value: '>', child: Text('>')),
-                          DropdownMenuItem(value: '<', child: Text('<')),
-                          DropdownMenuItem(value: '>=', child: Text('>=')),
-                          DropdownMenuItem(value: '<=', child: Text('<=')),
-                          DropdownMenuItem(value: '==', child: Text('==')),
-                          DropdownMenuItem(value: '!=', child: Text('!=')),
+                          DropdownMenuItem(value: '>', child: Text('After')),
+                          DropdownMenuItem(value: '<', child: Text('Before')),
+                          //DropdownMenuItem(value: '==', child: Text('Exactly at')),
                         ],
                         onChanged: (value) {
                           setState(() {
@@ -298,67 +509,49 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         },
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
+                    
+                    // Time Value
                     Expanded(
                       flex: 2,
                       child: TextFormField(
-                        initialValue: condition['value']?.toString() ?? '0',
-                        decoration: const InputDecoration(
-                          labelText: 'Value',
-                          border: OutlineInputBorder(),
+                        initialValue: condition['value']?.toString() ?? '18:00',
+                        decoration: InputDecoration(
+                          labelText: 'Time (HH:MM)',
+                          labelStyle: TextStyle(
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.orange.shade600, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          suffixIcon: Icon(
+                            Icons.access_time,
+                            color: Colors.orange.shade400,
+                            size: 20,
+                          ),
                         ),
-                        keyboardType: TextInputType.number,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         onChanged: (value) {
-                          condition['value'] = double.tryParse(value) ?? 0;
+                          condition['value'] = value;
                           _notifyChange();
                         },
                       ),
                     ),
                   ],
                 ),
-              ],
-            ] else if (condition['type'] == 'time') ...[
-              Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: DropdownButtonFormField<String>(
-                      value: condition['op'] ?? '>',
-                      decoration: const InputDecoration(
-                        labelText: 'Op',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: '>', child: Text('After')),
-                        DropdownMenuItem(value: '<', child: Text('Before')),
-                        DropdownMenuItem(value: '==', child: Text('At')),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          if (value != null) {
-                            condition['op'] = value;
-                          }
-                          _notifyChange();
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      initialValue: condition['value']?.toString() ?? '18:00',
-                      decoration: const InputDecoration(
-                        labelText: 'Time (HH:MM)',
-                        border: OutlineInputBorder(),
-                      ),
-                      onChanged: (value) {
-                        condition['value'] = value;
-                        _notifyChange();
-                      },
-                    ),
-                  ),
-                ],
               ),
             ],
           ],
@@ -372,12 +565,16 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
   }
 
   String? _getValidDeviceId(String? deviceId, List<Device> devices) {
-    if (deviceId == null || deviceId.isEmpty) {
+    if (devices.isEmpty) {
       return '';
+    }
+    
+    if (deviceId == null || deviceId.isEmpty) {
+      return null;
     }
     
     // Check if the deviceId exists in the available devices
     final deviceExists = devices.any((device) => device.id == deviceId);
-    return deviceExists ? deviceId : '';
+    return deviceExists ? deviceId : null;
   }
 }
