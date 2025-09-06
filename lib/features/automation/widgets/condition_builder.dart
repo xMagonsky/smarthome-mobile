@@ -185,7 +185,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             SizedBox(
               width: double.infinity,
               child: DropdownButtonFormField<String>(
-                value: condition['type'] ?? 'sensor',
+                initialValue: condition['type'] ?? 'sensor',
                 decoration: InputDecoration(
                   labelText: 'Condition Type',
                   labelStyle: TextStyle(
@@ -248,7 +248,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             if (condition['type'] == 'sensor') ...[
               // Device selection
               DropdownButtonFormField<String>(
-                value: _getValidDeviceId(condition['device_id']?.toString(), sensorDevices),
+                initialValue: _getValidDeviceId(condition['device_id']?.toString(), sensorDevices),
                 hint: const Text('Select device', style: TextStyle(color: Colors.grey)),
                 decoration: InputDecoration(
                   labelText: 'Device',
@@ -320,7 +320,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       Expanded(
                         flex: 3,
                         child: DropdownButtonFormField<String>(
-                          value: sensorKeys.contains(condition['key']) ? condition['key'] : null,
+                          initialValue: sensorKeys.contains(condition['key']) ? condition['key'] : null,
                           decoration: InputDecoration(
                             labelText: 'Sensor Type',
                             labelStyle: TextStyle(
@@ -370,7 +370,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       Expanded(
                         flex: 2,
                         child: DropdownButtonFormField<String>(
-                          value: condition['op'] ?? '>',
+                          initialValue: condition['op'] ?? '>',
                           decoration: InputDecoration(
                             labelText: 'Operator',
                             labelStyle: TextStyle(
@@ -471,7 +471,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                     Expanded(
                       flex: 2,
                       child: DropdownButtonFormField<String>(
-                        value: condition['op'] ?? '>',
+                        initialValue: condition['op'] ?? '>',
                         decoration: InputDecoration(
                           labelText: 'Time Condition',
                           labelStyle: TextStyle(

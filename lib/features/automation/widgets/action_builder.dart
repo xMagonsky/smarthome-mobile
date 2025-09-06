@@ -137,7 +137,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     return Column(
       children: [
         DropdownButtonFormField<String>(
-          value: dropdownValue,
+          initialValue: dropdownValue,
           hint: const Text('Select device'),
           decoration: const InputDecoration(
             labelText: 'Target Device',
@@ -161,7 +161,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
         if (deviceSelected) ...[
           const SizedBox(height: 12),
           DropdownButtonFormField<bool>(
-            value: action['params']?['on'] as bool? ?? true,
+            initialValue: action['params']?['on'] as bool? ?? true,
             decoration: const InputDecoration(
               labelText: 'Set state to',
               border: OutlineInputBorder(),
