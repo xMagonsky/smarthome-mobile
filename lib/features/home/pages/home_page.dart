@@ -4,6 +4,7 @@ import '../../../core/providers/device_provider.dart';
 import '../../devices/widgets/device_card.dart';
 import '../../devices/pages/device_detail_page.dart';
 import '../../devices/pages/add_device_page.dart';
+import '../../devices/pages/favorite_devices_page.dart';
 import '../widgets/stats_card.dart';
 
 class HomePage extends StatelessWidget {
@@ -225,6 +226,14 @@ class HomePage extends StatelessWidget {
                 value: '${deviceProvider.favoriteDevicesCount}',
                 icon: Icons.star,
                 color: Colors.amber,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FavoriteDevicesPage(),
+                    ),
+                  );
+                },
               ),
               StatsCard(
                 title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
