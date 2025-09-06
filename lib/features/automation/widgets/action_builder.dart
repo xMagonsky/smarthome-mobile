@@ -90,52 +90,111 @@ class _ActionBuilderState extends State<ActionBuilder> {
         }),
         
         // Add action button
-        ElevatedButton.icon(
-          onPressed: () {
-            setState(() {
-              actions.add(_createEmptyAction());
-              _notifyChange();
-            });
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add Action'),
-        ),
+        if (_lightDevices.isNotEmpty)
+          ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                actions.add(_createEmptyAction());
+                _notifyChange();
+              });
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Add Action'),
+          ),
       ],
     );
   }
 
   Widget _buildActionFields(Map<String, dynamic> action) {
-    return DropdownButtonFormField<String>(
-      value: _getValidDeviceId(action['device_id']?.toString()),
-      decoration: const InputDecoration(
-        labelText: 'Target Light',
-        border: OutlineInputBorder(),
-      ),
-      items: [
+    List<DropdownMenuItem<String>> items;
+    String? dropdownValue = _getValidDeviceId(action['device_id']?.toString());
+
+    if (_lightDevices.isEmpty) {
+      items = [
         const DropdownMenuItem<String>(
           value: '',
-          child: Text('Select Light'),
+          child: Text('No available devices'),
         ),
-        ..._lightDevices.map((device) {
-          return DropdownMenuItem<String>(
-            value: device['id']?.toString() ?? '',
-            child: Text(device['name'] ?? 'Unknown Light'),
-          );
-        }),
+      ];
+      dropdownValue = '';
+    } else {
+      items = _lightDevices.map((device) {
+        return DropdownMenuItem<String>(
+          value: device['id']?.toString() ?? '',
+          child: Text(device['name'] ?? 'Unknown Light'),
+        );
+      }).toList();
+
+      if (dropdownValue == null ||
+          !_lightDevices.any((d) => d['id']?.toString() == dropdownValue)) {
+        dropdownValue = null;
+      }
+    }
+
+    final deviceSelected =
+        action['device_id'] != null && (action['device_id'] as String).isNotEmpty;
+
+    return Column(
+      children: [
+        DropdownButtonFormField<String>(
+          initialValue: dropdownValue,
+          hint: const Text('Select device'),
+          decoration: const InputDecoration(
+            labelText: 'Target Device',
+            border: OutlineInputBorder(),
+          ),
+          items: items,
+          onChanged: _lightDevices.isEmpty
+              ? null
+              : (value) {
+                  setState(() {
+                    action['device_id'] = value ?? '';
+                    action['action'] = 'set_state';
+                    if (action['params'] == null ||
+                        action['params']['on'] == null) {
+                      action['params'] = {'on': true};
+                    }
+                    _notifyChange();
+                  });
+                },
+        ),
+        if (deviceSelected) ...[
+          const SizedBox(height: 12),
+          DropdownButtonFormField<bool>(
+            value: action['params']?['on'] as bool? ?? true,
+            decoration: const InputDecoration(
+              labelText: 'Set state to',
+              border: OutlineInputBorder(),
+            ),
+            items: const [
+              DropdownMenuItem<bool>(
+                value: true,
+                child: Text('ON'),
+              ),
+              DropdownMenuItem<bool>(
+                value: false,
+                child: Text('OFF'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  action['params']['on'] = value;
+                  _notifyChange();
+                });
+              }
+            },
+          ),
+        ],
       ],
-      onChanged: (value) {
-        setState(() {
-          action['device_id'] = value ?? '';
-          action['action'] = 'set_state';
-          action['params'] = {'on': true};
-          _notifyChange();
-        });
-      },
     );
   }
 
   void _notifyChange() {
-    widget.onChanged(actions);
+    final validActions = actions
+        .where((a) => a['device_id'] != null && a['device_id'].isNotEmpty)
+        .toList();
+    widget.onChanged(validActions);
   }
 
   String? _getValidDeviceId(String? deviceId) {
