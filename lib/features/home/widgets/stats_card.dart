@@ -6,6 +6,7 @@ class StatsCard extends StatefulWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  final bool isCompact;
 
   const StatsCard({
     super.key,
@@ -14,6 +15,7 @@ class StatsCard extends StatefulWidget {
     required this.icon,
     required this.color,
     this.onTap,
+    this.isCompact = false,
   });
 
   @override
@@ -65,7 +67,9 @@ class _StatsCardState extends State<StatsCard>
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: widget.isCompact 
+                    ? const EdgeInsets.all(12) 
+                    : const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
@@ -82,25 +86,32 @@ class _StatsCardState extends State<StatsCard>
                   children: [
                     Icon(
                       widget.icon,
-                      size: 32,
+                      size: widget.isCompact ? 24 : 32,
                       color: widget.color,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: widget.isCompact ? 4 : 8),
                     Text(
                       widget.value,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: widget.isCompact 
+                          ? Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: widget.color,
+                              )
+                          : Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: widget.color,
                               ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: widget.isCompact ? 2 : 4),
                     Text(
                       widget.title,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
+                            fontSize: widget.isCompact ? 11 : null,
                           ),
                       textAlign: TextAlign.center,
+                      maxLines: widget.isCompact ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
