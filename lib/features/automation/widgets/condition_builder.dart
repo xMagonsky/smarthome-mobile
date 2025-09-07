@@ -53,12 +53,15 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        _buildConditionGroup(conditions),
+        _buildConditionGroup(conditions, null, -1, []),
       ],
     );
   }
 
-  Widget _buildConditionGroup(Map<String, dynamic> group) {
+  Widget _buildConditionGroup(Map<String, dynamic> group,
+      [Map<String, dynamic>? parentGroup,
+      int index = -1,
+      List<dynamic> siblings = const []]) {
     final List<dynamic> children = group['children'] ?? [];
 
     return Card(
@@ -71,16 +74,36 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
             Row(
               children: [
                 const Text('Operator: '),
-                DropdownButton<String>(
-                  value: group['operator'] ?? 'AND',
-                  items: const [
-                    DropdownMenuItem(value: 'AND', child: Text('AND')),
-                    DropdownMenuItem(value: 'OR', child: Text('OR')),
-                  ],
-                  onChanged: (value) {
+                Expanded(
+                  child: DropdownButton<String>(
+                    value: group['operator'] ?? 'AND',
+                    items: const [
+                      DropdownMenuItem(value: 'AND', child: Text('AND')),
+                      DropdownMenuItem(value: 'OR', child: Text('OR')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        if (value != null) {
+                          group['operator'] = value;
+                        }
+                        _notifyChange();
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                  onPressed: () {
                     setState(() {
-                      if (value != null) {
-                        group['operator'] = value;
+                      if (parentGroup != null && index >= 0) {
+                        // This is a nested group, remove it from parent
+                        final newChildren = [...siblings];
+                        newChildren.removeAt(index);
+                        parentGroup['children'] = newChildren;
+                      } else {
+                        // This is the root group, reset to a single empty condition
+                        group['children'] = [_createEmptyCondition()];
                       }
                       _notifyChange();
                     });
@@ -98,25 +121,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: child['children'] != null
-                    ? Row(
-                        children: [
-                          Expanded(
-                            child: _buildConditionGroup(child),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete,
-                                color: Colors.red, size: 20),
-                            onPressed: () {
-                              setState(() {
-                                final newChildren = [...children];
-                                newChildren.removeAt(index);
-                                group['children'] = newChildren;
-                                _notifyChange();
-                              });
-                            },
-                          ),
-                        ],
-                      )
+                    ? _buildConditionGroup(child, group, index, children)
                     : _buildSingleCondition(child, index, children),
               );
             }),
@@ -246,7 +251,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           if (condition['key'] == null) {
                             condition.remove('key');
                           }
-                          condition['min_change'] = condition['min_change'] ?? 0.1;
+                          condition['min_change'] =
+                              condition['min_change'] ?? 0.1;
                           condition['value'] = condition['value'] ?? 25;
                         }
                         _notifyChange();
@@ -270,7 +276,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         parentGroup['children'] = newChildren;
                       } else {
                         // Find the parent group that contains these siblings
-                        _findAndUpdateParent(parentGroup, siblings, newChildren);
+                        _findAndUpdateParent(
+                            parentGroup, siblings, newChildren);
                       }
                       _notifyChange();
                     });
