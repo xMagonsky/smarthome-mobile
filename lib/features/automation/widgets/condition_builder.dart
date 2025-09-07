@@ -60,7 +60,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
 
   Widget _buildConditionGroup(Map<String, dynamic> group) {
     final List<dynamic> children = group['children'] ?? [];
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -89,12 +89,12 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Children conditions
             ...children.asMap().entries.map((entry) {
               final index = entry.key;
               final child = entry.value;
-              
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: Row(
@@ -119,7 +119,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                 ),
               );
             }),
-            
+
             // Add buttons
             Wrap(
               spacing: 8,
@@ -127,7 +127,10 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                 ElevatedButton.icon(
                   onPressed: () {
                     setState(() {
-                      group['children'] = [...children, _createEmptyCondition()];
+                      group['children'] = [
+                        ...children,
+                        _createEmptyCondition()
+                      ];
                       _notifyChange();
                     });
                   },
@@ -137,10 +140,13 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                 ElevatedButton.icon(
                   onPressed: () {
                     setState(() {
-                      group['children'] = [...children, {
-                        'operator': 'AND',
-                        'children': [_createEmptyCondition()],
-                      }];
+                      group['children'] = [
+                        ...children,
+                        {
+                          'operator': 'AND',
+                          'children': [_createEmptyCondition()],
+                        }
+                      ];
                       _notifyChange();
                     });
                   },
@@ -155,15 +161,17 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
     );
   }
 
-  Widget _buildSingleCondition(Map<String, dynamic> condition, int index, List<dynamic> siblings) {
-    final sensorDevices = widget.devices.where((d) => d.type == 'sensor').toList();
-    
+  Widget _buildSingleCondition(
+      Map<String, dynamic> condition, int index, List<dynamic> siblings) {
+    final sensorDevices =
+        widget.devices.where((d) => d.type == 'sensor').toList();
+
     final deviceId = condition['device_id'] as String?;
     final Device? selectedDevice = deviceId != null && deviceId.isNotEmpty
         ? sensorDevices.cast<Device?>().firstWhere(
-            (d) => d?.id == deviceId,
-            orElse: () => null,
-          )
+              (d) => d?.id == deviceId,
+              orElse: () => null,
+            )
         : null;
 
     final sensorKeys = selectedDevice != null
@@ -202,7 +210,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.indigo.shade600, width: 2),
+                    borderSide:
+                        BorderSide(color: Colors.indigo.shade600, width: 2),
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -213,11 +222,11 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                 ),
                 items: const [
                   DropdownMenuItem(
-                    value: 'sensor', 
+                    value: 'sensor',
                     child: Text('Sensor', style: TextStyle(fontSize: 14)),
                   ),
                   DropdownMenuItem(
-                    value: 'time', 
+                    value: 'time',
                     child: Text('Time', style: TextStyle(fontSize: 14)),
                   ),
                 ],
@@ -243,13 +252,15 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Condition-specific fields
             if (condition['type'] == 'sensor') ...[
               // Device selection
               DropdownButtonFormField<String>(
-                initialValue: _getValidDeviceId(condition['device_id']?.toString(), sensorDevices),
-                hint: const Text('Select device', style: TextStyle(color: Colors.grey)),
+                initialValue: _getValidDeviceId(
+                    condition['device_id']?.toString(), sensorDevices),
+                hint: const Text('Select device',
+                    style: TextStyle(color: Colors.grey)),
                 decoration: InputDecoration(
                   labelText: 'Device',
                   labelStyle: TextStyle(
@@ -266,7 +277,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                    borderSide:
+                        BorderSide(color: Colors.green.shade600, width: 2),
                   ),
                   filled: true,
                   fillColor: Colors.white,
@@ -279,7 +291,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                     ? [
                         const DropdownMenuItem<String>(
                           value: '',
-                          child: Text('No available devices', style: TextStyle(color: Colors.grey)),
+                          child: Text('No available devices',
+                              style: TextStyle(color: Colors.grey)),
                         ),
                       ]
                     : sensorDevices.map((device) {
@@ -302,10 +315,10 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       },
               ),
               const SizedBox(height: 16),
-              
+
               if (selectedDevice != null) ...[
                 const SizedBox(height: 8),
-                
+
                 // Sensor key, operator, and value in the same row
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -320,7 +333,9 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       Expanded(
                         flex: 3,
                         child: DropdownButtonFormField<String>(
-                          initialValue: sensorKeys.contains(condition['key']) ? condition['key'] : null,
+                          initialValue: sensorKeys.contains(condition['key'])
+                              ? condition['key']
+                              : null,
                           decoration: InputDecoration(
                             labelText: 'Sensor Type',
                             labelStyle: TextStyle(
@@ -329,19 +344,23 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                              borderSide: BorderSide(
+                                  color: Colors.blue.shade600, width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
                           items: sensorKeys.map((key) {
                             return DropdownMenuItem<String>(
@@ -365,7 +384,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      
+
                       // Operator
                       Expanded(
                         flex: 2,
@@ -379,19 +398,23 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                              borderSide: BorderSide(
+                                  color: Colors.blue.shade600, width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
                           items: const [
                             DropdownMenuItem(value: '>', child: Text('>')),
@@ -412,7 +435,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      
+
                       // Value
                       Expanded(
                         flex: 2,
@@ -426,27 +449,33 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.blue.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                              borderSide: BorderSide(
+                                  color: Colors.blue.shade600, width: 2),
                             ),
                             filled: true,
                             fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                             suffixIcon: Icon(
                               Icons.numbers,
                               color: Colors.blue.shade400,
                               size: 20,
                             ),
                           ),
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w500),
                           onChanged: (value) {
                             condition['value'] = double.tryParse(value) ?? 0;
                             _notifyChange();
@@ -480,19 +509,23 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade300),
+                            borderSide:
+                                BorderSide(color: Colors.orange.shade300),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade300),
+                            borderSide:
+                                BorderSide(color: Colors.orange.shade300),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade600, width: 2),
+                            borderSide: BorderSide(
+                                color: Colors.orange.shade600, width: 2),
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                         ),
                         items: const [
                           DropdownMenuItem(value: '>', child: Text('After')),
@@ -510,7 +543,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    
+
                     // Time Value
                     Expanded(
                       flex: 2,
@@ -524,26 +557,31 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade300),
+                            borderSide:
+                                BorderSide(color: Colors.orange.shade300),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade300),
+                            borderSide:
+                                BorderSide(color: Colors.orange.shade300),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.orange.shade600, width: 2),
+                            borderSide: BorderSide(
+                                color: Colors.orange.shade600, width: 2),
                           ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           suffixIcon: Icon(
                             Icons.access_time,
                             color: Colors.orange.shade400,
                             size: 20,
                           ),
                         ),
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500),
                         onChanged: (value) {
                           condition['value'] = value;
                           _notifyChange();
@@ -568,11 +606,11 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
     if (devices.isEmpty) {
       return '';
     }
-    
+
     if (deviceId == null || deviceId.isEmpty) {
       return null;
     }
-    
+
     // Check if the deviceId exists in the available devices
     final deviceExists = devices.any((device) => device.id == deviceId);
     return deviceExists ? deviceId : null;

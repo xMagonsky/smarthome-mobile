@@ -88,17 +88,18 @@ class _StatsCardState extends State<StatsCard>
                     const SizedBox(height: 8),
                     Text(
                       widget.value,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: widget.color,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: widget.color,
+                              ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       widget.title,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                            color: Colors.grey[600],
+                          ),
                       textAlign: TextAlign.center,
                     ),
                   ],

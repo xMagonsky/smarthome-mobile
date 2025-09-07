@@ -19,9 +19,12 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
-    _nameController = TextEditingController(text: settingsProvider.settings.userName);
-    _emailController = TextEditingController(text: settingsProvider.settings.email);
+    final settingsProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    _nameController =
+        TextEditingController(text: settingsProvider.settings.userName);
+    _emailController =
+        TextEditingController(text: settingsProvider.settings.email);
   }
 
   @override
@@ -100,7 +103,8 @@ class _SettingsPageState extends State<SettingsPage> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+                title:
+                    const Text('Sign Out', style: TextStyle(color: Colors.red)),
                 onTap: () => _showSignOutDialog(context),
               ),
             ],
@@ -201,7 +205,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _saveProfile() {
     if (_formKey.currentState!.validate()) {
-      final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+      final settingsProvider =
+          Provider.of<SettingsProvider>(context, listen: false);
       settingsProvider.updateUserName(_nameController.text);
       settingsProvider.updateEmail(_emailController.text);
       setState(() => _isEditing = false);
@@ -225,12 +230,14 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             TextButton(
               onPressed: () {
-                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                final authProvider =
+                    Provider.of<AuthProvider>(context, listen: false);
                 authProvider.logout();
                 Navigator.of(context).pop();
                 // The AuthWrapper will handle showing login screen
               },
-              child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+              child:
+                  const Text('Sign Out', style: TextStyle(color: Colors.red)),
             ),
           ],
         );

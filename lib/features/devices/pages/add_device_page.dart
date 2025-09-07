@@ -20,7 +20,8 @@ class _AddDevicePageState extends State<AddDevicePage> {
           TextButton(
             onPressed: () async {
               if (_nameController.text.isNotEmpty) {
-                final response = await ApiService().setDeviceOwner(_nameController.text);
+                final response =
+                    await ApiService().setDeviceOwner(_nameController.text);
                 if (response.statusCode == 200) {
                   if (mounted) Navigator.pop(this.context);
                 } else {
