@@ -36,6 +36,8 @@ class _ActionBuilderState extends State<ActionBuilder> {
       'action': 'set_state',
       'params': {'on': false},
       'device_id': '',
+  // UI-only field; stripped before emitting from _notifyChange
+  'selected_state_key': null,
     };
   }
 
@@ -134,14 +136,46 @@ class _ActionBuilderState extends State<ActionBuilder> {
     final deviceSelected = action['device_id'] != null &&
         (action['device_id'] as String).isNotEmpty;
 
-    return Column(
+    // Find the selected device
+    Device? selectedDevice;
+    if (deviceSelected) {
+      try {
+        selectedDevice =
+            _lightDevices.firstWhere((d) => d.id == action['device_id']);
+      } catch (_) {
+        selectedDevice = null;
+      }
+    }
+
+  return Column(
       children: [
         DropdownButtonFormField<String>(
           initialValue: dropdownValue,
           hint: const Text('Select device'),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Target Device',
-            border: OutlineInputBorder(),
+            labelStyle: TextStyle(
+              color: Colors.purple.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.purple.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.purple.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: Icon(
+              Icons.memory,
+              color: Colors.purple.shade400,
+            ),
           ),
           items: items,
           onChanged: _lightDevices.isEmpty
@@ -150,40 +184,161 @@ class _ActionBuilderState extends State<ActionBuilder> {
                   setState(() {
                     action['device_id'] = value ?? '';
                     action['action'] = 'set_state';
-                    if (action['params'] == null ||
-                        action['params']['on'] == null) {
+                    // Initialize a single selectable boolean state
+                    final dev = _lightDevices.firstWhere(
+                        (d) => d.id == (value ?? ''),
+                        orElse: () => _lightDevices.first);
+                    final boolKeys = dev.state.entries
+                        .where((e) => e.value is bool)
+                        .map((e) => e.key)
+                        .toList();
+                    String? selectedKey = action['selected_state_key'];
+                    if (selectedKey == null || !boolKeys.contains(selectedKey)) {
+                      if (boolKeys.contains('on')) {
+                        selectedKey = 'on';
+                      } else {
+                        selectedKey = boolKeys.isNotEmpty ? boolKeys.first : null;
+                      }
+                    }
+                    action['selected_state_key'] = selectedKey;
+                    if (selectedKey != null) {
+                      final current = (dev.state[selectedKey] as bool?) ?? false;
+                      action['params'] = {selectedKey: current};
+                    } else {
                       action['params'] = {'on': true};
                     }
                     _notifyChange();
                   });
                 },
         ),
-        if (deviceSelected) ...[
+        if (deviceSelected && selectedDevice != null) ...[
           const SizedBox(height: 12),
-          DropdownButtonFormField<bool>(
-            initialValue: action['params']?['on'] as bool? ?? true,
-            decoration: const InputDecoration(
-              labelText: 'Set state to',
-              border: OutlineInputBorder(),
+          // Styled container similar to conditions, with state picker and switch
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.purple.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.purple.shade200),
             ),
-            items: const [
-              DropdownMenuItem<bool>(
-                value: true,
-                child: Text('ON'),
-              ),
-              DropdownMenuItem<bool>(
-                value: false,
-                child: Text('OFF'),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                setState(() {
-                  action['params']['on'] = value;
-                  _notifyChange();
-                });
+            child: Builder(builder: (context) {
+              final boolEntries = selectedDevice!.state.entries
+                  .where((e) => e.value is bool)
+                  .toList();
+              if (boolEntries.isEmpty) {
+                return const Text(
+                  'This device has no boolean states to set.',
+                  style: TextStyle(color: Colors.grey),
+                );
               }
-            },
+
+              final keys = boolEntries.map((e) => e.key).toList();
+              String? selectedKey = action['selected_state_key'] as String?;
+              if (selectedKey == null || !keys.contains(selectedKey)) {
+                selectedKey = keys.contains('on') ? 'on' : keys.first;
+                action['selected_state_key'] = selectedKey;
+              }
+              final bool currentDeviceValue =
+                  (selectedDevice.state[selectedKey] as bool?) ?? false;
+              final bool selectedValue = (action['params']?[selectedKey]
+                      as bool?) ??
+                  currentDeviceValue;
+
+              return Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: DropdownButtonFormField<String>(
+                      initialValue: selectedKey,
+                      decoration: InputDecoration(
+                        labelText: 'State',
+                        labelStyle: TextStyle(
+                          color: Colors.purple.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              BorderSide(color: Colors.purple.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              BorderSide(color: Colors.purple.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color: Colors.purple.shade600, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(
+                          Icons.toggle_on,
+                          color: Colors.purple.shade400,
+                        ),
+                      ),
+                      items: keys
+                          .map(
+                            (k) => DropdownMenuItem<String>(
+                              value: k,
+                              child: Text(
+                                k.replaceAll('_', ' ').toUpperCase(),
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (k) {
+                        if (k == null) return;
+                        setState(() {
+                          action['selected_state_key'] = k;
+                          final bool deviceVal =
+                              (selectedDevice!.state[k] as bool?) ?? false;
+                          action['params'] = {k: deviceVal};
+                          _notifyChange();
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.purple.shade200),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Value',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 14)),
+                          Switch.adaptive(
+                            value: selectedValue,
+                            onChanged: (v) {
+                              setState(() {
+                                final k = action['selected_state_key']
+                                    as String?;
+                                if (k != null) {
+                                  action['params'] = {k: v};
+                                  _notifyChange();
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }),
           ),
         ],
       ],
@@ -194,7 +349,25 @@ class _ActionBuilderState extends State<ActionBuilder> {
     final validActions = actions
         .where((a) =>
             a['device_id'] != null && (a['device_id'] as String).isNotEmpty)
-        .toList();
+        .map((a) {
+      final sanitized = <String, dynamic>{
+        'action': a['action'] ?? 'set_state',
+        'device_id': a['device_id'],
+      };
+      final selectedKey = a['selected_state_key'] as String?;
+      final params = a['params'] as Map<String, dynamic>?;
+      if (selectedKey != null && params != null && params.containsKey(selectedKey)) {
+        sanitized['params'] = {selectedKey: params[selectedKey]};
+      } else if (params != null && params.isNotEmpty) {
+        // fallback: copy the first entry only
+        final first = params.entries.first;
+        sanitized['params'] = {first.key: first.value};
+      } else {
+        sanitized['params'] = {'on': true};
+      }
+      return sanitized;
+    }).toList();
+
     widget.onChanged(validActions);
   }
 
