@@ -15,16 +15,24 @@ class _SettingsPageState extends State<SettingsPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _emailController;
+  VoidCallback? _settingsListener;
+  late SettingsProvider _settingsProvider;
 
   @override
   void initState() {
     super.initState();
-    final settingsProvider =
-        Provider.of<SettingsProvider>(context, listen: false);
+    _settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
     _nameController =
-        TextEditingController(text: settingsProvider.settings.userName);
+        TextEditingController(text: _settingsProvider.settings.userName);
     _emailController =
-        TextEditingController(text: settingsProvider.settings.email);
+        TextEditingController(text: _settingsProvider.settings.email);
+    // Keep controllers in sync when settings get updated from API
+    _settingsListener = () {
+      if (!mounted) return;
+      _nameController.text = _settingsProvider.settings.userName;
+      _emailController.text = _settingsProvider.settings.email;
+    };
+    _settingsProvider.addListener(_settingsListener!);
   }
 
   @override
@@ -39,6 +47,9 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildMainView(SettingsProvider settingsProvider) {
+    if (settingsProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         // User Profile Header
@@ -78,13 +89,21 @@ class _SettingsPageState extends State<SettingsPage> {
                         color: Colors.grey[600],
                       ),
                     ),
+                    if (settingsProvider.error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Text(
+                          settingsProvider.error!,
+                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                        ),
+                      ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () => setState(() => _isEditing = true),
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.edit),
+              //   onPressed: () => setState(() => _isEditing = true),
+              // ),
             ],
           ),
         ),
@@ -93,14 +112,14 @@ class _SettingsPageState extends State<SettingsPage> {
           child: ListView(
             children: [
               const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Edit Profile'),
-                subtitle: const Text('Change name, email and password'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => setState(() => _isEditing = true),
-              ),
-              const Divider(),
+              // ListTile(
+              //   leading: const Icon(Icons.person),
+              //   title: const Text('Edit Profile'),
+              //   subtitle: const Text('Change name, email and password'),
+              //   trailing: const Icon(Icons.chevron_right),
+              //   onTap: () => setState(() => _isEditing = true),
+              // ),
+              // const Divider(),
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
                 title:
@@ -247,6 +266,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void dispose() {
+    if (_settingsListener != null) {
+  _settingsProvider.removeListener(_settingsListener!);
+    }
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();

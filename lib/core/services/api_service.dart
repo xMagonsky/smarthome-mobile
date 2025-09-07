@@ -39,6 +39,31 @@ class ApiService {
     );
   }
 
+  /// Fetch the currently authenticated user's profile
+  /// Expected to return JSON with at least name/username and email fields
+  Future<Map<String, dynamic>> getCurrentUser() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConstants.apiBaseUrl}/users/me'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        if (data is Map<String, dynamic>) {
+          return data;
+        } else {
+          throw const FormatException('Invalid /users/me response format');
+        }
+      } else {
+        throw HttpException('Failed to fetch current user: ${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.e('Error fetching current user: $e');
+      throw Exception('Failed to fetch current user: $e');
+    }
+  }
+
   Future<http.Response> login(String username, String password) async {
     print("API Service: Attempting login for $username");
     try {

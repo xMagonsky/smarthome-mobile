@@ -385,7 +385,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                   const SizedBox(height: 4),
                   // Add state button if any remaining keys available
                   if (keysAll

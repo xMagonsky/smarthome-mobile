@@ -25,6 +25,7 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  bool _initialized = false;
   @override
   void initState() {
     super.initState();
@@ -37,17 +38,25 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
         if (auth.isAuthenticated) {
-          // Load devices after authentication is confirmed
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final deviceProvider =
-                Provider.of<DeviceProvider>(context, listen: false);
-            deviceProvider.loadDevices();
-            final automationProvider =
-                Provider.of<AutomationProvider>(context, listen: false);
-            automationProvider.loadAutomations();
-          });
+          // Load everything only once after authentication is confirmed
+          if (!_initialized) {
+            _initialized = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final deviceProvider =
+                  Provider.of<DeviceProvider>(context, listen: false);
+              deviceProvider.loadDevices();
+              final automationProvider =
+                  Provider.of<AutomationProvider>(context, listen: false);
+              automationProvider.loadAutomations();
+              final settingsProvider =
+                  Provider.of<SettingsProvider>(context, listen: false);
+              settingsProvider.loadUserProfile();
+            });
+          }
           return const MainScreen();
         } else {
+          // Reset initialization flag so next successful login triggers loads again
+          if (_initialized) _initialized = false;
           return const LoginScreen();
         }
       },
