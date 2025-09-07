@@ -236,29 +236,31 @@ class HomePage extends StatelessWidget {
                     ),
                   ],
                 )
-              : Row(
+              : Column(
                   children: [
-                    Expanded(
-                      child: StatsCard(
-                        title: 'Online',
-                        value: '${deviceProvider.onlineDevicesCount}',
-                        icon: Icons.wifi,
-                        color: Colors.green,
-                        isCompact: true,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: StatsCard(
+                            title: 'Online',
+                            value: '${deviceProvider.onlineDevicesCount}',
+                            icon: Icons.wifi,
+                            color: Colors.green,
+                            isCompact: true,
+                          ),
+                        ),
+                        SizedBox(width: isVerySmall ? 6 : 8),
+                        Expanded(
+                          child: StatsCard(
+                            title: 'Offline',
+                            value: '${deviceProvider.offlineDevicesCount}',
+                            icon: Icons.wifi_off,
+                            color: Colors.red,
+                            isCompact: true,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: isVerySmall ? 6 : 8),
-                    Expanded(
-                      child: StatsCard(
-                        title: 'Offline',
-                        value: '${deviceProvider.offlineDevicesCount}',
-                        icon: Icons.wifi_off,
-                        color: Colors.red,
-                        isCompact: true,
-                      ),
-                    ),
-                    SizedBox(width: isVerySmall ? 6 : 8),
-                    Expanded(
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
