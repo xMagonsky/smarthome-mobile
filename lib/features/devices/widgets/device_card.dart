@@ -46,7 +46,7 @@ class _DeviceCardState extends State<DeviceCard>
     final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
-    
+
     return GestureDetector(
       onTapDown: (_) => _animationController.forward(),
       onTapUp: (_) => _animationController.reverse(),
@@ -63,8 +63,8 @@ class _DeviceCardState extends State<DeviceCard>
                 vertical: 6,
               ),
               child: Card(
-                elevation: widget.device.isOnline ? 2 : 1,
-                color: widget.device.isOnline ? null : Colors.grey.shade100,
+                elevation: widget.device.isOnline ? 4 : 2,
+                color: widget.device.isOnline ? null : Colors.grey.shade200,
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -73,11 +73,25 @@ class _DeviceCardState extends State<DeviceCard>
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
+                              Colors.blue.shade50,
                               Colors.white,
-                              Colors.grey.shade50,
+                              Colors.blue.shade100.withValues(alpha: 0.3),
                             ],
                           )
-                        : null,
+                        : LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.grey.shade100,
+                              Colors.grey.shade50,
+                            ],
+                          ),
+                    border: Border.all(
+                      color: widget.device.isOnline 
+                          ? Colors.blue.shade200.withValues(alpha: 0.5)
+                          : Colors.grey.shade300,
+                      width: 1,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -92,7 +106,8 @@ class _DeviceCardState extends State<DeviceCard>
     );
   }
 
-  Widget _buildCardContent(BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
+  Widget _buildCardContent(
+      BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
     if (widget.device.type == 'sensor') {
       return _buildSensorCard(deviceProvider, isTablet);
     } else {
@@ -115,12 +130,11 @@ class _DeviceCardState extends State<DeviceCard>
                     child: Text(
                       widget.device.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: widget.device.isOnline ? null : Colors.grey,
-                      ),
+                            fontWeight: FontWeight.w600,
+                            color: widget.device.isOnline ? null : Colors.grey,
+                          ),
                     ),
                   ),
-                  _buildFavoriteButton(deviceProvider),
                 ],
               ),
               const SizedBox(height: 8),
@@ -153,12 +167,11 @@ class _DeviceCardState extends State<DeviceCard>
                     child: Text(
                       widget.device.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: widget.device.isOnline ? null : Colors.grey,
-                      ),
+                            fontWeight: FontWeight.w600,
+                            color: widget.device.isOnline ? null : Colors.grey,
+                          ),
                     ),
                   ),
-                  _buildFavoriteButton(deviceProvider),
                 ],
               ),
               const SizedBox(height: 4),
@@ -167,10 +180,12 @@ class _DeviceCardState extends State<DeviceCard>
                   Text(
                     widget.device.isOn ? 'Włączone' : 'Wyłączone',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: widget.device.isOnline
-                          ? (widget.device.isOn ? Colors.green : Colors.grey.shade600)
-                          : Colors.grey.shade400,
-                    ),
+                          color: widget.device.isOnline
+                              ? (widget.device.isOn
+                                  ? Colors.green
+                                  : Colors.grey.shade600)
+                              : Colors.grey.shade400,
+                        ),
                   ),
                   if (!widget.device.isOnline) ...[
                     const SizedBox(width: 8),
@@ -245,24 +260,6 @@ class _DeviceCardState extends State<DeviceCard>
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFavoriteButton(DeviceProvider deviceProvider) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => deviceProvider.toggleFavorite(widget.device.id),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Icon(
-            widget.device.isFavorite ? Icons.star : Icons.star_border,
-            color: widget.device.isFavorite ? Colors.amber : Colors.grey,
-            size: 20,
-          ),
-        ),
       ),
     );
   }

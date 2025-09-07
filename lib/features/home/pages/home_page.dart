@@ -4,7 +4,6 @@ import '../../../core/providers/device_provider.dart';
 import '../../devices/widgets/device_card.dart';
 import '../../devices/pages/device_detail_page.dart';
 import '../../devices/pages/add_device_page.dart';
-import '../../devices/pages/favorite_devices_page.dart';
 import '../widgets/stats_card.dart';
 
 class HomePage extends StatelessWidget {
@@ -89,8 +88,12 @@ class HomePage extends StatelessWidget {
               SliverToBoxAdapter(
                 child: _buildEmptyState(context),
               )
-            else
+            else ...[
+              SliverToBoxAdapter(
+                child: _buildDevicesHeader(context, deviceProvider),
+              ),
               _buildDevicesList(deviceProvider, isTablet),
+            ],
           ],
         ),
       ),
@@ -201,48 +204,72 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: isTablet ? 4 : 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: isTablet ? 1.0 : 1.2,
-            children: [
-              StatsCard(
-                title: 'Urządzenia Online',
-                value: '${deviceProvider.onlineDevicesCount}',
-                icon: Icons.wifi,
-                color: Colors.green,
-              ),
-              StatsCard(
-                title: 'Urządzenia Offline',
-                value: '${deviceProvider.offlineDevicesCount}',
-                icon: Icons.wifi_off,
-                color: Colors.red,
-              ),
-              StatsCard(
-                title: 'Ulubione',
-                value: '${deviceProvider.favoriteDevicesCount}',
-                icon: Icons.star,
-                color: Colors.amber,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const FavoriteDevicesPage(),
+          isTablet
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: StatsCard(
+                        title: 'Urządzenia Online',
+                        value: '${deviceProvider.onlineDevicesCount}',
+                        icon: Icons.wifi,
+                        color: Colors.green,
+                      ),
                     ),
-                  );
-                },
-              ),
-              StatsCard(
-                title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
-                value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
-                icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
-                color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
-              ),
-            ],
-          ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: StatsCard(
+                        title: 'Urządzenia Offline',
+                        value: '${deviceProvider.offlineDevicesCount}',
+                        icon: Icons.wifi_off,
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: StatsCard(
+                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
+                        value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
+                        icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
+                        color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: StatsCard(
+                            title: 'Urządzenia Online',
+                            value: '${deviceProvider.onlineDevicesCount}',
+                            icon: Icons.wifi,
+                            color: Colors.green,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: StatsCard(
+                            title: 'Urządzenia Offline',
+                            value: '${deviceProvider.offlineDevicesCount}',
+                            icon: Icons.wifi_off,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 50),
+                      child: StatsCard(
+                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
+                        value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
+                        icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
+                        color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
           const SizedBox(height: 16),
         ],
       ),
@@ -287,6 +314,74 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDevicesHeader(BuildContext context, DeviceProvider deviceProvider) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.indigo.shade50,
+            Colors.blue.shade50,
+            Colors.white,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.indigo.shade200.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.indigo.shade100.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.indigo.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.devices,
+              color: Colors.indigo.shade700,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Moje Urządzenia',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo.shade800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${deviceProvider.devices.length} ${deviceProvider.devices.length == 1 ? 'urządzenie' : 'urządzeń'}',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.indigo.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,7 +4,6 @@ class Device {
   final String type;
   final Map<String, dynamic> state;
   final String mqttTopic;
-  final bool isFavorite;
   final bool isOnline;
 
   Device({
@@ -13,19 +12,17 @@ class Device {
     required this.type,
     required this.state,
     required this.mqttTopic,
-    this.isFavorite = false,
     this.isOnline = true,
   });
 
   bool get isOn => state['on'] ?? false;
-  
+
   Device copyWith({
     String? id,
     String? name,
     String? type,
     Map<String, dynamic>? state,
     String? mqttTopic,
-    bool? isFavorite,
     bool? isOnline,
   }) {
     return Device(
@@ -34,7 +31,6 @@ class Device {
       type: type ?? this.type,
       state: state ?? this.state,
       mqttTopic: mqttTopic ?? this.mqttTopic,
-      isFavorite: isFavorite ?? this.isFavorite,
       isOnline: isOnline ?? this.isOnline,
     );
   }
