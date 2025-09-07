@@ -71,7 +71,8 @@ class MqttService {
 
   void subscribeToTopics(List<String> topics) {
     for (var topic in topics) {
-      final systemTopic = '$topic/system';
+      final base = _normalizeBase(topic);
+      final systemTopic = '$base/system';
       print('Subscribing to $systemTopic');
       client.subscribe(systemTopic, MqttQos.atLeastOnce);
     }
@@ -79,7 +80,8 @@ class MqttService {
 
   void unsubscribeFromTopics(List<String> topics) {
     for (var topic in topics) {
-      final systemTopic = '$topic/system';
+      final base = _normalizeBase(topic);
+      final systemTopic = '$base/system';
       print('Unsubscribing from $systemTopic');
       client.unsubscribe(systemTopic);
     }
@@ -87,8 +89,9 @@ class MqttService {
 
   // Per-device state topic management (subscribe when opening detail page)
   void subscribeToStateTopic(String topicBase) {
-    final stateTopic = '$topicBase/state';
-  _stateSubscriptions.add(topicBase);
+    final base = _normalizeBase(topicBase);
+    final stateTopic = '$base/state';
+    _stateSubscriptions.add(base);
     if (!isConnected) {
       print('MQTT not connected; cannot subscribe to $stateTopic now');
       return;
@@ -98,8 +101,9 @@ class MqttService {
   }
 
   void unsubscribeFromStateTopic(String topicBase) {
-    final stateTopic = '$topicBase/state';
-  _stateSubscriptions.remove(topicBase);
+    final base = _normalizeBase(topicBase);
+    final stateTopic = '$base/state';
+    _stateSubscriptions.remove(base);
     if (!isConnected) {
       // If not connected, nothing to unsubscribe
       return;
@@ -135,5 +139,27 @@ class MqttService {
 
   void disconnect() {
     client.disconnect();
+  }
+
+  // Publish a command payload to {topicBase}/commands as JSON
+  Future<void> publishCommand(String topicBase, Map<String, dynamic> payload) async {
+    final base = _normalizeBase(topicBase);
+    final topic = '$base/commands';
+    try {
+      if (!isConnected) {
+        // Attempt a quick reconnect; if it fails the catch will log
+        await connect();
+      }
+      final builder = MqttClientPayloadBuilder();
+      builder.addString(jsonEncode(payload));
+      client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
+      print('Published command to $topic: $payload');
+    } catch (e) {
+      print('Failed to publish command to $topic: $e');
+    }
+  }
+
+  String _normalizeBase(String topicBase) {
+    return topicBase.replaceAll(RegExp(r'/(state|system|commands)$'), '');
   }
 }

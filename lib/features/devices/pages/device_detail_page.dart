@@ -71,7 +71,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
                 if (live.type == 'sensor')
                   _buildSensorDetails(live)
                 else
-                  _buildDeviceControls(deviceProvider, live),
+                  _buildLightDetails(deviceProvider, live),
               ],
             ),
           ),
@@ -109,20 +109,42 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
     );
   }
 
-  Widget _buildDeviceControls(DeviceProvider deviceProvider, Device live) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Switch(
-            value: live.isOn,
-            onChanged: (value) {
-              deviceProvider.toggleDevice(live.id, value);
-            },
-          ),
-          const Text('Toggle On/Off'),
-        ],
-      ),
+  // For light and similar devices: list each state entry with a toggle.
+  Widget _buildLightDetails(DeviceProvider deviceProvider, Device live) {
+    if (live.state.isEmpty) {
+      return const Text('No controllable states');
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Controls:',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 10),
+        ...live.state.entries.map((entry) {
+          final key = entry.key;
+          final current = entry.value;
+          final currentAsBool = current == true; // anything else treated as false
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              leading: const Icon(Icons.toggle_on, color: Colors.amber),
+              title: Text(key.toUpperCase()),
+              subtitle: current is bool
+                  ? null
+                  : Text('Current: $current', style: const TextStyle(color: Colors.grey)),
+              trailing: Switch(
+                value: currentAsBool,
+                onChanged: (val) {
+                  deviceProvider.publishStateToggle(live, key, val);
+                },
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 

@@ -108,7 +108,7 @@ class _DeviceCardState extends State<DeviceCard>
 
   Widget _buildCardContent(
       BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
-    if (widget.device.type == 'sensor') {
+  if (widget.device.type == 'sensor' || widget.device.type == 'light') {
       return _buildSensorCard(deviceProvider, isTablet);
     } else {
       return _buildDeviceCard(deviceProvider, isTablet);

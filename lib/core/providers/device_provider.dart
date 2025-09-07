@@ -117,7 +117,9 @@ class DeviceProvider extends ChangeNotifier {
       updatedState['on'] = isOn;
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
-      // In future: Call API to update real device
+  // Send MQTT command if topic known
+  final topicBase = devices[index].mqttTopic;
+  _mqttService.publishCommand(topicBase, {'on': isOn});
     }
   }
 
@@ -145,5 +147,18 @@ class DeviceProvider extends ChangeNotifier {
 
   void unsubscribeFromDeviceState(Device device) {
     _mqttService.unsubscribeFromStateTopic(device.mqttTopic);
+  }
+
+  // Publish a boolean command for a specific state entry, e.g., { '<entry>': true/false }
+  void publishStateToggle(Device device, String stateKey, bool value) {
+    // Optimistic UI update
+    final index = devices.indexWhere((d) => d.id == device.id);
+    if (index != -1) {
+      final updatedState = Map<String, dynamic>.from(devices[index].state);
+      updatedState[stateKey] = value;
+      devices[index] = devices[index].copyWith(state: updatedState);
+      notifyListeners();
+    }
+    _mqttService.publishCommand(device.mqttTopic, {stateKey: value});
   }
 }
