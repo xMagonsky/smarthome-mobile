@@ -105,7 +105,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           : _buildSingleCondition(child, index, children),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                       onPressed: () {
                         setState(() {
                           final newChildren = [...children];
@@ -134,8 +134,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       _notifyChange();
                     });
                   },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Condition'),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Condition'),
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -150,8 +150,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                       _notifyChange();
                     });
                   },
-                  icon: const Icon(Icons.add_box),
-                  label: const Text('Add Group'),
+                  icon: const Icon(Icons.add_box, size: 18),
+                  label: const Text('Group'),
                 ),
               ],
             ),
@@ -218,6 +218,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   prefixIcon: Icon(
                     Icons.category,
                     color: Colors.indigo.shade400,
+                    size: 20,
                   ),
                 ),
                 items: const [
@@ -285,6 +286,7 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   prefixIcon: Icon(
                     Icons.devices,
                     color: Colors.green.shade400,
+                    size: 20,
                   ),
                 ),
                 items: sensorDevices.isEmpty
@@ -327,161 +329,156 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.blue.shade200),
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
                       // Sensor Type
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: sensorKeys.contains(condition['key'])
-                              ? condition['key']
-                              : null,
-                          decoration: InputDecoration(
-                            labelText: 'Sensor Type',
-                            labelStyle: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: Colors.blue.shade600, width: 2),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                      DropdownButtonFormField<String>(
+                        initialValue: sensorKeys.contains(condition['key'])
+                            ? condition['key']
+                            : null,
+                        decoration: InputDecoration(
+                          labelText: 'Sensor',
+                          labelStyle: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w500,
                           ),
-                          items: sensorKeys.map((key) {
-                            return DropdownMenuItem<String>(
-                              value: key,
-                              child: Text(
-                                key.replaceAll('_', ' ').toUpperCase(),
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              if (value != null) {
-                                condition['key'] = value;
-                              } else {
-                                condition.remove('key');
-                              }
-                              _notifyChange();
-                            });
-                          },
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                BorderSide(color: Colors.blue.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                BorderSide(color: Colors.blue.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                                color: Colors.blue.shade600, width: 2),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 6),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Operator
-                      Expanded(
-                        flex: 2,
-                        child: DropdownButtonFormField<String>(
-                          initialValue: condition['op'] ?? '>',
-                          decoration: InputDecoration(
-                            labelText: 'Operator',
-                            labelStyle: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w500,
+                        items: sensorKeys.map((key) {
+                          return DropdownMenuItem<String>(
+                            value: key,
+                            child: Text(
+                              key.replaceAll('_', ' ').toUpperCase(),
+                              style: const TextStyle(fontSize: 10),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: Colors.blue.shade600, width: 2),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: '>', child: Text('>')),
-                            DropdownMenuItem(value: '<', child: Text('<')),
-                            // ;)
-                            // DropdownMenuItem(value: '>=', child: Text('≥')),
-                            // DropdownMenuItem(value: '<=', child: Text('≤')),
-                            DropdownMenuItem(value: '==', child: Text('=')),
-                            DropdownMenuItem(value: '!=', child: Text('≠')),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              if (value != null) {
-                                condition['op'] = value;
-                              }
-                              _notifyChange();
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Value
-                      Expanded(
-                        flex: 2,
-                        child: TextFormField(
-                          initialValue: condition['value']?.toString() ?? '0',
-                          decoration: InputDecoration(
-                            labelText: 'Value',
-                            labelStyle: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.blue.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                  color: Colors.blue.shade600, width: 2),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            suffixIcon: Icon(
-                              Icons.numbers,
-                              color: Colors.blue.shade400,
-                              size: 20,
-                            ),
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w500),
-                          onChanged: (value) {
-                            condition['value'] = double.tryParse(value) ?? 0;
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            if (value != null) {
+                              condition['key'] = value;
+                            } else {
+                              condition.remove('key');
+                            }
                             _notifyChange();
-                          },
-                        ),
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Operator and Value in Row
+                      Row(
+                        children: [
+                          // Operator
+                          Expanded(
+                            flex: 1,
+                            child: DropdownButtonFormField<String>(
+                              initialValue: condition['op'] ?? '>',
+                              decoration: InputDecoration(
+                                labelText: 'Op',
+                                labelStyle: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      BorderSide(color: Colors.blue.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      BorderSide(color: Colors.blue.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: Colors.blue.shade600, width: 2),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 6),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: '>', child: Text('>')),
+                                DropdownMenuItem(value: '<', child: Text('<')),
+                                DropdownMenuItem(value: '==', child: Text('=')),
+                                DropdownMenuItem(value: '!=', child: Text('≠')),
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  if (value != null) {
+                                    condition['op'] = value;
+                                  }
+                                  _notifyChange();
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Value
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              initialValue: condition['value']?.toString() ?? '0',
+                              decoration: InputDecoration(
+                                labelText: 'Value',
+                                labelStyle: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      BorderSide(color: Colors.blue.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide:
+                                      BorderSide(color: Colors.blue.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                      color: Colors.blue.shade600, width: 2),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 6),
+                              ),
+                              keyboardType: const TextInputType.numberWithOptions(
+                                  decimal: true),
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w500),
+                              onChanged: (value) {
+                                condition['value'] = double.tryParse(value) ?? 0;
+                                _notifyChange();
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -495,99 +492,87 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.orange.shade200),
                 ),
-                child: Row(
+                child: Column(
                   children: [
                     // Time Operator
-                    Expanded(
-                      flex: 2,
-                      child: DropdownButtonFormField<String>(
-                        initialValue: condition['op'] ?? '>',
-                        decoration: InputDecoration(
-                          labelText: 'Time Condition',
-                          labelStyle: TextStyle(
-                            color: Colors.orange.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.orange.shade300),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.orange.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                color: Colors.orange.shade600, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                    DropdownButtonFormField<String>(
+                      initialValue: condition['op'] ?? '>',
+                      decoration: InputDecoration(
+                        labelText: 'When',
+                        labelStyle: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.w500,
                         ),
-                        items: const [
-                          DropdownMenuItem(value: '>', child: Text('After')),
-                          DropdownMenuItem(value: '<', child: Text('Before')),
-                          //DropdownMenuItem(value: '==', child: Text('Exactly at')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            if (value != null) {
-                              condition['op'] = value;
-                            }
-                            _notifyChange();
-                          });
-                        },
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: Colors.orange.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: Colors.orange.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                              color: Colors.orange.shade600, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                       ),
+                      items: const [
+                        DropdownMenuItem(value: '>', child: Text('After')),
+                        DropdownMenuItem(value: '<', child: Text('Before')),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            condition['op'] = value;
+                          }
+                          _notifyChange();
+                        });
+                      },
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(height: 8),
 
                     // Time Value
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
-                        initialValue: condition['value']?.toString() ?? '18:00',
-                        decoration: InputDecoration(
-                          labelText: 'Time (HH:MM)',
-                          labelStyle: TextStyle(
-                            color: Colors.orange.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.orange.shade300),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.orange.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                                color: Colors.orange.shade600, width: 2),
-                          ),
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          suffixIcon: Icon(
-                            Icons.access_time,
-                            color: Colors.orange.shade400,
-                            size: 20,
-                          ),
+                    TextFormField(
+                      initialValue: condition['value']?.toString() ?? '18:00',
+                      decoration: InputDecoration(
+                        labelText: 'Time',
+                        labelStyle: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.w500,
                         ),
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500),
-                        onChanged: (value) {
-                          condition['value'] = value;
-                          _notifyChange();
-                        },
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: Colors.orange.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide:
+                              BorderSide(color: Colors.orange.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(
+                              color: Colors.orange.shade600, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                       ),
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w500),
+                      onChanged: (value) {
+                        condition['value'] = value;
+                        _notifyChange();
+                      },
                     ),
                   ],
                 ),

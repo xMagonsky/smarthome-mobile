@@ -75,7 +75,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
                       Expanded(child: _buildActionFields(action)),
                       if (actions.length > 1)
                         IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                           onPressed: () {
                             setState(() {
                               actions.removeAt(index);
@@ -99,8 +99,8 @@ class _ActionBuilderState extends State<ActionBuilder> {
               _notifyChange();
             });
           },
-          icon: const Icon(Icons.add),
-          label: const Text('Add Action'),
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('Action'),
         ),
       ],
     );
@@ -152,7 +152,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
           initialValue: dropdownValue,
           hint: const Text('Select device'),
           decoration: InputDecoration(
-            labelText: 'Target Device',
+            labelText: 'Device',
             labelStyle: TextStyle(
               color: Colors.purple.shade700,
               fontWeight: FontWeight.w600,
@@ -174,6 +174,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
             prefixIcon: Icon(
               Icons.memory,
               color: Colors.purple.shade400,
+              size: 20,
             ),
           ),
           items: items,
@@ -311,7 +312,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
                                             .replaceAll('_', ' ')
                                             .toUpperCase(),
                                         style:
-                                            const TextStyle(fontSize: 14),
+                                            const TextStyle(fontSize: 12),
                                       ),
                                     ),
                                   )
@@ -349,10 +350,12 @@ class _ActionBuilderState extends State<ActionBuilder> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('Value',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14)),
+                                  Expanded(
+                                    child: Text('ON/OFF',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 10)),
+                                  ),
                                   Switch.adaptive(
                                     value: currentValue,
                                     onChanged: (v) {
