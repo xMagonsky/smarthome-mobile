@@ -83,7 +83,8 @@ class AutomationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+    final automationProvider =
+        Provider.of<AutomationProvider>(context, listen: false);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -150,7 +151,11 @@ class AutomationCard extends StatelessWidget {
         return '$key $op $value';
       case 'time':
         String op = condition.op?.toString() ?? '==';
-        String opText = op == '>' ? 'after' : op == '<' ? 'before' : 'at';
+        String opText = op == '>'
+            ? 'after'
+            : op == '<'
+                ? 'before'
+                : 'at';
         String value = condition.value?.toString() ?? '00:00';
         return '$opText $value';
       case 'device':
@@ -179,10 +184,12 @@ class AutomationCard extends StatelessWidget {
         final isOn = action.params['on'] == true;
         return 'Turn ${isOn ? 'on' : 'off'} device';
       case 'set_brightness':
-        final String brightness = action.params['brightness']?.toString() ?? '100';
+        final String brightness =
+            action.params['brightness']?.toString() ?? '100';
         return 'Set brightness to $brightness%';
       case 'set_temperature':
-        final String temperature = action.params['temperature']?.toString() ?? '20';
+        final String temperature =
+            action.params['temperature']?.toString() ?? '20';
         return 'Set temperature to $temperature°C';
       case 'set_color':
         final String color = action.params['color']?.toString() ?? '#FFFFFF';

@@ -57,12 +57,12 @@ class _ActionBuilderState extends State<ActionBuilder> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        
+
         // Actions list
         ...actions.asMap().entries.map((entry) {
           final index = entry.key;
           final action = entry.value;
-          
+
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             child: Padding(
@@ -89,7 +89,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
             ),
           );
         }),
-        
+
         // Add action button
         ElevatedButton.icon(
           onPressed: () {
@@ -131,8 +131,8 @@ class _ActionBuilderState extends State<ActionBuilder> {
       }
     }
 
-    final deviceSelected =
-        action['device_id'] != null && (action['device_id'] as String).isNotEmpty;
+    final deviceSelected = action['device_id'] != null &&
+        (action['device_id'] as String).isNotEmpty;
 
     return Column(
       children: [
@@ -192,7 +192,8 @@ class _ActionBuilderState extends State<ActionBuilder> {
 
   void _notifyChange() {
     final validActions = actions
-        .where((a) => a['device_id'] != null && (a['device_id'] as String).isNotEmpty)
+        .where((a) =>
+            a['device_id'] != null && (a['device_id'] as String).isNotEmpty)
         .toList();
     widget.onChanged(validActions);
   }
@@ -201,7 +202,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
     if (deviceId == null || deviceId.isEmpty) {
       return '';
     }
-    
+
     // Check if the deviceId exists in the available devices
     final deviceExists = _lightDevices.any((device) => device.id == deviceId);
     return deviceExists ? deviceId : '';

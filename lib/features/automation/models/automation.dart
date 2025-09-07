@@ -18,7 +18,8 @@ class Automation {
 
 class Trigger {
   final String type; // 'time', 'device', 'sensor', 'schedule'
-  final String value; // czas w formacie HH:MM, device id, sensor id, cron expression
+  final String
+      value; // czas w formacie HH:MM, device id, sensor id, cron expression
   final String sensorType; // np. 'temperature', 'humidity' dla sensor triggers
   final String description;
 
@@ -49,9 +50,11 @@ class Condition {
 }
 
 class AutomationAction {
-  final String type; // 'device_toggle', 'device_set_value', 'notification', 'scene', 'delay'
+  final String
+      type; // 'device_toggle', 'device_set_value', 'notification', 'scene', 'delay'
   final String deviceId;
-  final dynamic value; // true/false dla toggle, wartość dla set_value, tekst dla notification
+  final dynamic
+      value; // true/false dla toggle, wartość dla set_value, tekst dla notification
   final String description;
   final int? delaySeconds; // dla akcji delay
 

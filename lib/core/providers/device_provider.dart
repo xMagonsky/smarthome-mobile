@@ -16,15 +16,16 @@ class DeviceProvider extends ChangeNotifier {
       final response = await _apiService.fetchDevices();
       if (response.statusCode == 200) {
         final List<dynamic> deviceData = jsonDecode(response.body);
-        devices = deviceData.map((data) => Device(
-          id: data['id'],
-          name: data['name'],
-          type: data['type'],
-          state: data['state'],
-          mqttTopic: data['mqtt_topic'],
-          isFavorite: data['is_favorite'] ?? false,
-          isOnline: data['is_online'] ?? true,
-        )).toList();
+        devices = deviceData
+            .map((data) => Device(
+                  id: data['id'],
+                  name: data['name'],
+                  type: data['type'],
+                  state: data['state'],
+                  mqttTopic: data['mqtt_topic'],
+                  isOnline: data['is_online'] ?? true,
+                ))
+            .toList();
       } else {
         // Handle error - for demo, load sample data
         print('Failed to load devices: ${response.statusCode}');
@@ -35,7 +36,6 @@ class DeviceProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
-
 
   void addDevice(String name, String type) {
     final newDevice = Device(
@@ -95,20 +95,9 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  void toggleFavorite(String id) {
-    final index = devices.indexWhere((d) => d.id == id);
-    if (index != -1) {
-      devices[index] = devices[index].copyWith(isFavorite: !devices[index].isFavorite);
-      notifyListeners();
-    }
-  }
-
   // Statistics getters
   int get onlineDevicesCount => devices.where((d) => d.isOnline).length;
   int get offlineDevicesCount => devices.where((d) => !d.isOnline).length;
-  int get favoriteDevicesCount => devices.where((d) => d.isFavorite).length;
-  List<Device> get favoriteDevices => devices.where((d) => d.isFavorite).toList();
-  
   bool get allDevicesOk => devices.isEmpty || devices.every((d) => d.isOnline);
   int get alertsCount => devices.where((d) => !d.isOnline).length;
 }

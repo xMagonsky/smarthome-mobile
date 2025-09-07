@@ -55,11 +55,13 @@ class ApiService {
     }
   }
 
-  Future<http.Response> register(String username, String password, String email) async {
+  Future<http.Response> register(
+      String username, String password, String email) async {
     final response = await http.post(
       Uri.parse('${AppConstants.apiBaseUrl}/auth/register'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password, 'email': email}),
+      body: jsonEncode(
+          {'username': username, 'password': password, 'email': email}),
     );
     return response;
   }
@@ -82,7 +84,8 @@ class ApiService {
         final List<dynamic> data = json.decode(response.body);
         return data.map((item) => Rule.fromJson(item)).toList();
       } else {
-        throw HttpException('Failed to fetch automations: ${response.statusCode}');
+        throw HttpException(
+            'Failed to fetch automations: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error fetching automations: $e');
@@ -90,7 +93,8 @@ class ApiService {
     }
   }
 
-  Future<Rule> createAutomation(String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+  Future<Rule> createAutomation(String name, Map<String, dynamic> conditions,
+      List<Map<String, dynamic>> actions) async {
     try {
       final response = await http.post(
         Uri.parse('${AppConstants.apiBaseUrl}/automations/rules'),
@@ -106,7 +110,8 @@ class ApiService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         return Rule.fromJson(json.decode(response.body));
       } else {
-        throw HttpException('Failed to create automation: ${response.statusCode}');
+        throw HttpException(
+            'Failed to create automation: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error creating automation: $e');
@@ -114,7 +119,11 @@ class ApiService {
     }
   }
 
-  Future<Rule> updateAutomation(String id, String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+  Future<Rule> updateAutomation(
+      String id,
+      String name,
+      Map<String, dynamic> conditions,
+      List<Map<String, dynamic>> actions) async {
     try {
       final response = await http.patch(
         Uri.parse('${AppConstants.apiBaseUrl}/automations/rules/$id'),
@@ -129,7 +138,8 @@ class ApiService {
       if (response.statusCode == 200) {
         return Rule.fromJson(json.decode(response.body));
       } else {
-        throw HttpException('Failed to update automation: ${response.statusCode}');
+        throw HttpException(
+            'Failed to update automation: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error updating automation: $e');
@@ -145,7 +155,8 @@ class ApiService {
       );
 
       if (response.statusCode != 200 && response.statusCode != 204) {
-        throw HttpException('Failed to delete automation: ${response.statusCode}');
+        throw HttpException(
+            'Failed to delete automation: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error deleting automation: $e');
@@ -162,7 +173,8 @@ class ApiService {
       );
 
       if (response.statusCode != 200) {
-        throw HttpException('Failed to toggle automation: ${response.statusCode}');
+        throw HttpException(
+            'Failed to toggle automation: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error toggling automation: $e');

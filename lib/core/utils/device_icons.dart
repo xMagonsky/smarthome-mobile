@@ -55,9 +55,10 @@ class DeviceIcons {
     }
   }
 
-  static Color getColorForDeviceType(String type, {bool isOn = false, bool isOnline = true}) {
+  static Color getColorForDeviceType(String type,
+      {bool isOn = false, bool isOnline = true}) {
     if (!isOnline) return Colors.grey;
-    
+
     switch (type.toLowerCase()) {
       case 'light':
       case 'lamp':

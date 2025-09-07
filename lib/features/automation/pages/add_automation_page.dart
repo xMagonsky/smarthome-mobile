@@ -19,7 +19,7 @@ class AddAutomationPage extends StatefulWidget {
 class _AddAutomationPageState extends State<AddAutomationPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  
+
   Map<String, dynamic> conditions = {};
   List<Map<String, dynamic>> actions = [];
   bool isLoading = false;
@@ -30,11 +30,14 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     if (widget.automation != null) {
       _nameController.text = widget.automation!.name;
       conditions = _conditionsToMap(widget.automation!.conditions);
-      actions = widget.automation!.actions.map((action) => {
-        'action': action.action,
-        'params': Map<String, dynamic>.from(action.params),
-        'device_id': action.device_id.toString(), // Ensure device_id is always a string
-      }).toList();
+      actions = widget.automation!.actions
+          .map((action) => {
+                'action': action.action,
+                'params': Map<String, dynamic>.from(action.params),
+                'device_id': action.device_id
+                    .toString(), // Ensure device_id is always a string
+              })
+          .toList();
     } else {
       // Initialize with default structure
       conditions = {
@@ -62,14 +65,18 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
   Map<String, dynamic> _conditionsToMap(Conditions conditions) {
     return {
       'operator': conditions.operator,
-      'children': conditions.children.map((child) => {
-        'type': child.type,
-        'op': child.op,
-        'value': child.value, // Keep as dynamic since it can be int, double, or string
-        'key': child.key,
-        'device_id': child.device_id?.toString() ?? '', // Ensure deviceId is always a string
-        'min_change': child.min_change,
-      }).toList(),
+      'children': conditions.children
+          .map((child) => {
+                'type': child.type,
+                'op': child.op,
+                'value': child
+                    .value, // Keep as dynamic since it can be int, double, or string
+                'key': child.key,
+                'device_id': child.device_id?.toString() ??
+                    '', // Ensure deviceId is always a string
+                'min_change': child.min_change,
+              })
+          .toList(),
     };
   }
 
@@ -80,7 +87,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.automation == null ? 'Add Automation' : 'Edit Automation'),
+        title: Text(
+            widget.automation == null ? 'Add Automation' : 'Edit Automation'),
         actions: [
           if (widget.automation != null)
             IconButton(
@@ -158,19 +166,21 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text(
                           'Save Automation',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
                 const SizedBox(height: 16),
               ],
             ),
           ),
-          
+
           // Loading overlay for provider operations
           if (automationProvider.isLoading)
             Container(
@@ -200,7 +210,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     });
 
     try {
-      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+      final automationProvider =
+          Provider.of<AutomationProvider>(context, listen: false);
 
       if (widget.automation == null) {
         // Create new automation
@@ -221,7 +232,9 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
 
       if (automationProvider.errorMessage == null) {
         if (mounted) Navigator.pop(context);
-        _showSuccessSnackBar(widget.automation == null ? 'Automation created successfully' : 'Automation updated successfully');
+        _showSuccessSnackBar(widget.automation == null
+            ? 'Automation created successfully'
+            : 'Automation updated successfully');
       } else {
         _showErrorSnackBar(automationProvider.errorMessage!);
       }
@@ -253,9 +266,10 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     );
 
     if (confirmed == true && widget.automation != null) {
-      final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+      final automationProvider =
+          Provider.of<AutomationProvider>(context, listen: false);
       await automationProvider.removeAutomation(widget.automation!.id);
-      
+
       if (automationProvider.errorMessage == null) {
         if (mounted) Navigator.pop(context);
         _showSuccessSnackBar('Automation deleted successfully');
@@ -274,7 +288,8 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     for (final child in children) {
       if (child is Map<String, dynamic>) {
         if (child['type'] == 'sensor') {
-          if (child['device_id'] == null || child['device_id'].toString().isEmpty) {
+          if (child['device_id'] == null ||
+              child['device_id'].toString().isEmpty) {
             return false;
           }
         }
@@ -289,8 +304,10 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
     }
 
     for (final action in actions) {
-      if (action['action'] != 'send_notification' && action['action'] != 'delay') {
-        if (action['device_id'] == null || action['device_id'].toString().isEmpty) {
+      if (action['action'] != 'send_notification' &&
+          action['action'] != 'delay') {
+        if (action['device_id'] == null ||
+            action['device_id'].toString().isEmpty) {
           return false;
         }
       }

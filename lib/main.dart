@@ -39,9 +39,11 @@ class _AuthWrapperState extends State<AuthWrapper> {
         if (auth.isAuthenticated) {
           // Load devices after authentication is confirmed
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final deviceProvider = Provider.of<DeviceProvider>(context, listen: false);
+            final deviceProvider =
+                Provider.of<DeviceProvider>(context, listen: false);
             deviceProvider.loadDevices();
-            final automationProvider = Provider.of<AutomationProvider>(context, listen: false);
+            final automationProvider =
+                Provider.of<AutomationProvider>(context, listen: false);
             automationProvider.loadAutomations();
           });
           return const MainScreen();
@@ -61,7 +63,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-
   @override
   void initState() {
     super.initState();
@@ -76,7 +77,9 @@ class _MainAppState extends State<MainApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeviceProvider()),
-        ChangeNotifierProvider(create: (_) => AutomationProvider(apiService: automationApiService)),
+        ChangeNotifierProvider(
+            create: (_) =>
+                AutomationProvider(apiService: automationApiService)),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => RuleProvider()),
@@ -84,7 +87,6 @@ class _MainAppState extends State<MainApp> {
       ],
       child: Builder(
         builder: (context) {
-
           return MaterialApp(
             title: 'Smart Home App',
             theme: appTheme,
@@ -151,10 +153,12 @@ class _MainScreenState extends State<MainScreen> {
           _isNavigatingToLogin = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/', (route) => false);
             }
           });
-          return const SizedBox.shrink(); // Return empty widget while navigating
+          return const SizedBox
+              .shrink(); // Return empty widget while navigating
         }
 
         return Scaffold(

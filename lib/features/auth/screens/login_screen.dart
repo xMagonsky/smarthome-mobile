@@ -44,7 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const RegisterScreen()),
                 );
               },
               child: const Text('Don\'t have an account? Register'),
@@ -59,13 +60,13 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isLoading = true;
     });
-print("Attempting login with username: ${_usernameController.text}");
+    print("Attempting login with username: ${_usernameController.text}");
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final success = await authProvider.login(
       _usernameController.text,
       _passwordController.text,
     );
-print("Login success: $success");
+    print("Login success: $success");
     setState(() {
       _isLoading = false;
     });

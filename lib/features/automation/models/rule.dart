@@ -21,7 +21,7 @@ class Rule {
     return Rule(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
-      conditions: json['conditions'] is String 
+      conditions: json['conditions'] is String
           ? Conditions.fromJson(jsonDecode(json['conditions']))
           : Conditions.fromJson(json['conditions']),
       actions: json['actions'] is String
@@ -113,13 +113,13 @@ class ConditionChild {
     final Map<String, dynamic> json = {
       'type': type,
     };
-    
+
     if (op != null) json['op'] = op;
     if (value != null) json['value'] = value;
     if (key != null) json['key'] = key;
     if (device_id != null) json['device_id'] = device_id;
     if (min_change != null) json['min_change'] = min_change;
-    
+
     return json;
   }
 

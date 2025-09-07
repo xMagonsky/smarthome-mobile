@@ -8,7 +8,8 @@ class AutomationProvider extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
-  AutomationProvider({required ApiService apiService}) : _apiService = apiService;
+  AutomationProvider({required ApiService apiService})
+      : _apiService = apiService;
 
   Future<void> loadAutomations() async {
     isLoading = true;
@@ -25,13 +26,15 @@ class AutomationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addAutomation(String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+  Future<void> addAutomation(String name, Map<String, dynamic> conditions,
+      List<Map<String, dynamic>> actions) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      final newAutomation = await _apiService.createAutomation(name, conditions, actions);
+      final newAutomation =
+          await _apiService.createAutomation(name, conditions, actions);
       automations.add(newAutomation);
     } catch (e) {
       errorMessage = e.toString();
@@ -41,13 +44,18 @@ class AutomationProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateAutomation(String id, String name, Map<String, dynamic> conditions, List<Map<String, dynamic>> actions) async {
+  Future<void> updateAutomation(
+      String id,
+      String name,
+      Map<String, dynamic> conditions,
+      List<Map<String, dynamic>> actions) async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      final updatedAutomation = await _apiService.updateAutomation(id, name, conditions, actions);
+      final updatedAutomation =
+          await _apiService.updateAutomation(id, name, conditions, actions);
       final index = automations.indexWhere((a) => a.id == id);
       if (index != -1) {
         automations[index] = updatedAutomation;
