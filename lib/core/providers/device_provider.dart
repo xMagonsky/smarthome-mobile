@@ -2,16 +2,50 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../../features/devices/models/device.dart';
 import '../services/api_service.dart';
+import '../services/mqtt_service.dart';
 
 class DeviceProvider extends ChangeNotifier {
   List<Device> devices = [];
   final ApiService _apiService = ApiService();
+  late MqttService _mqttService;
 
   DeviceProvider() {
+    _mqttService = MqttService(
+      onDeviceStatusChanged: updateDeviceOnlineStatus,
+      onDeviceStateChanged: _mergeDeviceStateFromMqtt,
+    );
+    _mqttService.connect();
     // Don't load devices automatically - wait for authentication
   }
 
+  void updateDeviceOnlineStatus(String mqttTopic, bool isOnline) {
+    final index = devices.indexWhere((d) => d.mqttTopic == mqttTopic);
+    if (index != -1) {
+      if (devices[index].isOnline != isOnline) {
+        devices[index] = devices[index].copyWith(isOnline: isOnline);
+        notifyListeners();
+      }
+    }
+  }
+
+  void _mergeDeviceStateFromMqtt(String mqttTopicBase, Map<String, dynamic> newState) {
+    final index = devices.indexWhere((d) => d.mqttTopic == mqttTopicBase);
+    if (index != -1) {
+      // Merge incoming state keys into existing state map
+      final updatedState = Map<String, dynamic>.from(devices[index].state);
+      updatedState.addAll(newState);
+      devices[index] = devices[index].copyWith(state: updatedState);
+      notifyListeners();
+    }
+  }
+
   void loadDevices() async {
+    // Unsubscribe from old topics before fetching new list
+    final oldTopics = devices.map((d) => d.mqttTopic).toList();
+    if (oldTopics.isNotEmpty) {
+      _mqttService.unsubscribeFromTopics(oldTopics);
+    }
+
     try {
       final response = await _apiService.fetchDevices();
       if (response.statusCode == 200) {
@@ -23,15 +57,18 @@ class DeviceProvider extends ChangeNotifier {
                   type: data['type'],
                   state: data['state'],
                   mqttTopic: data['mqtt_topic'],
-                  isOnline: data['is_online'] ?? true,
+                  isOnline: data['is_online'] ?? true, 
                 ))
             .toList();
+        
+  final newTopics = devices.map((d) => d.mqttTopic).toList();
+        if (newTopics.isNotEmpty) {
+          _mqttService.subscribeToTopics(newTopics);
+        }
       } else {
-        // Handle error - for demo, load sample data
         print('Failed to load devices: ${response.statusCode}');
       }
     } catch (e) {
-      // Handle error - for demo, load sample data
       print('Error loading devices: $e');
     }
     notifyListeners();
@@ -100,4 +137,13 @@ class DeviceProvider extends ChangeNotifier {
   int get offlineDevicesCount => devices.where((d) => !d.isOnline).length;
   bool get allDevicesOk => devices.isEmpty || devices.every((d) => d.isOnline);
   int get alertsCount => devices.where((d) => !d.isOnline).length;
+
+  // Expose helpers for detail page to subscribe/unsubscribe to a specific device state topic
+  void subscribeToDeviceState(Device device) {
+    _mqttService.subscribeToStateTopic(device.mqttTopic);
+  }
+
+  void unsubscribeFromDeviceState(Device device) {
+    _mqttService.unsubscribeFromStateTopic(device.mqttTopic);
+  }
 }

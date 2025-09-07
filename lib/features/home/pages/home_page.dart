@@ -227,8 +227,8 @@ class HomePage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: StatsCard(
-                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
-                        value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
+                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Nie wszystkie urządzenia działają',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
                         icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
                         color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
                       ),
@@ -259,11 +259,11 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
+                    SizedBox(
+                      width: double.infinity,
                       child: StatsCard(
-                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
-                        value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
+                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Nie wszystkie urządzenia działają',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
                         icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
                         color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
                       ),
