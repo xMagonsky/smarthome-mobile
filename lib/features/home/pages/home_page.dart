@@ -40,6 +40,7 @@ class HomePage extends StatelessWidget {
     final deviceProvider = Provider.of<DeviceProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
+    final isVerySmall = screenWidth < 360; // Dla bardzo małych ekranów
 
     return Scaffold(
       body: Container(
@@ -82,7 +83,7 @@ class HomePage extends StatelessWidget {
               child: _buildWelcomeBanner(context),
             ),
             SliverToBoxAdapter(
-              child: _buildStatsSection(context, deviceProvider, isTablet),
+              child: _buildStatsSection(context, deviceProvider, isTablet, isVerySmall),
             ),
             if (deviceProvider.devices.isEmpty)
               SliverToBoxAdapter(
@@ -191,7 +192,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
+  Widget _buildStatsSection(BuildContext context, DeviceProvider deviceProvider, bool isTablet, bool isVerySmall) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -235,37 +236,35 @@ class HomePage extends StatelessWidget {
                     ),
                   ],
                 )
-              : Column(
+              : Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StatsCard(
-                            title: 'Urządzenia Online',
-                            value: '${deviceProvider.onlineDevicesCount}',
-                            icon: Icons.wifi,
-                            color: Colors.green,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: StatsCard(
-                            title: 'Urządzenia Offline',
-                            value: '${deviceProvider.offlineDevicesCount}',
-                            icon: Icons.wifi_off,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 50),
+                    Expanded(
                       child: StatsCard(
-                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Alerty',
+                        title: 'Online',
+                        value: '${deviceProvider.onlineDevicesCount}',
+                        icon: Icons.wifi,
+                        color: Colors.green,
+                        isCompact: true,
+                      ),
+                    ),
+                    SizedBox(width: isVerySmall ? 6 : 8),
+                    Expanded(
+                      child: StatsCard(
+                        title: 'Offline',
+                        value: '${deviceProvider.offlineDevicesCount}',
+                        icon: Icons.wifi_off,
+                        color: Colors.red,
+                        isCompact: true,
+                      ),
+                    ),
+                    SizedBox(width: isVerySmall ? 6 : 8),
+                    Expanded(
+                      child: StatsCard(
+                        title: deviceProvider.allDevicesOk ? 'OK' : 'Alerty',
                         value: deviceProvider.allDevicesOk ? '✓' : '${deviceProvider.alertsCount}',
                         icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
                         color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+                        isCompact: true,
                       ),
                     ),
                   ],
