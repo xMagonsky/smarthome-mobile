@@ -67,8 +67,8 @@ class _StatsCardState extends State<StatsCard>
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Container(
-                padding: widget.isCompact 
-                    ? const EdgeInsets.all(12) 
+                padding: widget.isCompact
+                    ? const EdgeInsets.all(12)
                     : const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -92,7 +92,7 @@ class _StatsCardState extends State<StatsCard>
                     SizedBox(height: widget.isCompact ? 4 : 8),
                     Text(
                       widget.value,
-                      style: widget.isCompact 
+                      style: widget.isCompact
                           ? Theme.of(context).textTheme.titleLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: widget.color,

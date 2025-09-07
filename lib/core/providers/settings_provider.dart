@@ -39,7 +39,8 @@ class SettingsProvider extends ChangeNotifier {
     try {
       final me = await _api.getCurrentUser();
       // Common field names: name or username, and email
-      final String name = (me['name'] ?? me['username'] ?? _settings.userName).toString();
+      final String name =
+          (me['name'] ?? me['username'] ?? _settings.userName).toString();
       final String email = (me['email'] ?? _settings.email).toString();
       _settings = _settings.copyWith(userName: name, email: email);
     } catch (e) {

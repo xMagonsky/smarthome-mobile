@@ -28,7 +28,8 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  void _mergeDeviceStateFromMqtt(String mqttTopicBase, Map<String, dynamic> newState) {
+  void _mergeDeviceStateFromMqtt(
+      String mqttTopicBase, Map<String, dynamic> newState) {
     final index = devices.indexWhere((d) => d.mqttTopic == mqttTopicBase);
     if (index != -1) {
       // Merge incoming state keys into existing state map
@@ -57,11 +58,11 @@ class DeviceProvider extends ChangeNotifier {
                   type: data['type'],
                   state: data['state'],
                   mqttTopic: data['mqtt_topic'],
-                  isOnline: data['is_online'] ?? true, 
+                  isOnline: data['is_online'] ?? true,
                 ))
             .toList();
-        
-  final newTopics = devices.map((d) => d.mqttTopic).toList();
+
+        final newTopics = devices.map((d) => d.mqttTopic).toList();
         if (newTopics.isNotEmpty) {
           _mqttService.subscribeToTopics(newTopics);
         }
@@ -117,9 +118,9 @@ class DeviceProvider extends ChangeNotifier {
       updatedState['on'] = isOn;
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
-  // Send MQTT command if topic known
-  final topicBase = devices[index].mqttTopic;
-  _mqttService.publishCommand(topicBase, {'on': isOn});
+      // Send MQTT command if topic known
+      final topicBase = devices[index].mqttTopic;
+      _mqttService.publishCommand(topicBase, {'on': isOn});
     }
   }
 

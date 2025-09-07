@@ -97,26 +97,27 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: child['children'] != null
-                          ? _buildConditionGroup(child)
-                          : _buildSingleCondition(child, index, children),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                      onPressed: () {
-                        setState(() {
-                          final newChildren = [...children];
-                          newChildren.removeAt(index);
-                          group['children'] = newChildren;
-                          _notifyChange();
-                        });
-                      },
-                    ),
-                  ],
-                ),
+                child: child['children'] != null
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: _buildConditionGroup(child),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete,
+                                color: Colors.red, size: 20),
+                            onPressed: () {
+                              setState(() {
+                                final newChildren = [...children];
+                                newChildren.removeAt(index);
+                                group['children'] = newChildren;
+                                _notifyChange();
+                              });
+                            },
+                          ),
+                        ],
+                      )
+                    : _buildSingleCondition(child, index, children),
               );
             }),
 
@@ -256,65 +257,94 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
 
             // Condition-specific fields
             if (condition['type'] == 'sensor') ...[
-              // Device selection
-              DropdownButtonFormField<String>(
-                initialValue: _getValidDeviceId(
-                    condition['device_id']?.toString(), sensorDevices),
-                hint: const Text('Select device',
-                    style: TextStyle(color: Colors.grey)),
-                decoration: InputDecoration(
-                  labelText: 'Device',
-                  labelStyle: TextStyle(
-                    color: Colors.green.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.green.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.green.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide:
-                        BorderSide(color: Colors.green.shade600, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(
-                    Icons.devices,
-                    color: Colors.green.shade400,
-                    size: 20,
-                  ),
-                ),
-                items: sensorDevices.isEmpty
-                    ? [
-                        const DropdownMenuItem<String>(
-                          value: '',
-                          child: Text('No available devices',
-                              style: TextStyle(color: Colors.grey)),
+              // Device selection with trash icon
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _getValidDeviceId(
+                          condition['device_id']?.toString(), sensorDevices),
+                      hint: const Text('Select device',
+                          style: TextStyle(color: Colors.grey)),
+                      decoration: InputDecoration(
+                        labelText: 'Device',
+                        labelStyle: TextStyle(
+                          color: Colors.green.shade700,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ]
-                    : sensorDevices.map((device) {
-                        return DropdownMenuItem<String>(
-                          value: device.id,
-                          child: Text(
-                            device.name,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        );
-                      }).toList(),
-                onChanged: sensorDevices.isEmpty
-                    ? null
-                    : (value) {
-                        setState(() {
-                          condition['device_id'] = value ?? '';
-                          condition.remove('key');
-                          _notifyChange();
-                        });
-                      },
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.green.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.green.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                              color: Colors.green.shade600, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        prefixIcon: Icon(
+                          Icons.devices,
+                          color: Colors.green.shade400,
+                          size: 20,
+                        ),
+                      ),
+                      items: sensorDevices.isEmpty
+                          ? [
+                              const DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('No available devices',
+                                    style: TextStyle(color: Colors.grey)),
+                              ),
+                            ]
+                          : sensorDevices.map((device) {
+                              return DropdownMenuItem<String>(
+                                value: device.id,
+                                child: Text(
+                                  device.name,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                      onChanged: sensorDevices.isEmpty
+                          ? null
+                          : (value) {
+                              setState(() {
+                                condition['device_id'] = value ?? '';
+                                condition.remove('key');
+                                _notifyChange();
+                              });
+                            },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        final newChildren = [...siblings];
+                        newChildren.removeAt(index);
+                        if (newChildren.isEmpty) {
+                          newChildren.add(_createEmptyCondition());
+                        }
+                        // Update the parent's children
+                        final parentGroup = conditions;
+                        if (parentGroup['children'] == siblings) {
+                          parentGroup['children'] = newChildren;
+                        } else {
+                          // Find the parent group that contains these siblings
+                          _findAndUpdateParent(
+                              parentGroup, siblings, newChildren);
+                        }
+                        _notifyChange();
+                      });
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -344,13 +374,11 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.blue.shade300),
+                            borderSide: BorderSide(color: Colors.blue.shade300),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                BorderSide(color: Colors.blue.shade300),
+                            borderSide: BorderSide(color: Colors.blue.shade300),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -441,7 +469,8 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           Expanded(
                             flex: 2,
                             child: TextFormField(
-                              initialValue: condition['value']?.toString() ?? '0',
+                              initialValue:
+                                  condition['value']?.toString() ?? '0',
                               decoration: InputDecoration(
                                 labelText: 'Value',
                                 labelStyle: TextStyle(
@@ -468,12 +497,14 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                                 contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 4, vertical: 6),
                               ),
-                              keyboardType: const TextInputType.numberWithOptions(
-                                  decimal: true),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      decimal: true),
                               style: const TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.w500),
                               onChanged: (value) {
-                                condition['value'] = double.tryParse(value) ?? 0;
+                                condition['value'] =
+                                    double.tryParse(value) ?? 0;
                                 _notifyChange();
                               },
                             ),
@@ -505,13 +536,11 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: Colors.orange.shade300),
+                          borderSide: BorderSide(color: Colors.orange.shade300),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: Colors.orange.shade300),
+                          borderSide: BorderSide(color: Colors.orange.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -549,13 +578,11 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: Colors.orange.shade300),
+                          borderSide: BorderSide(color: Colors.orange.shade300),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide:
-                              BorderSide(color: Colors.orange.shade300),
+                          borderSide: BorderSide(color: Colors.orange.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -586,6 +613,23 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
 
   void _notifyChange() {
     widget.onChanged(conditions);
+  }
+
+  void _findAndUpdateParent(Map<String, dynamic> group,
+      List<dynamic> targetSiblings, List<dynamic> newChildren) {
+    final children = group['children'] as List<dynamic>?;
+    if (children == targetSiblings) {
+      group['children'] = newChildren;
+      return;
+    }
+
+    if (children != null) {
+      for (final child in children) {
+        if (child is Map<String, dynamic> && child['children'] != null) {
+          _findAndUpdateParent(child, targetSiblings, newChildren);
+        }
+      }
+    }
   }
 
   String? _getValidDeviceId(String? deviceId, List<Device> devices) {
