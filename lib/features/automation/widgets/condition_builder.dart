@@ -190,161 +190,157 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Condition type
-            SizedBox(
-              width: double.infinity,
-              child: DropdownButtonFormField<String>(
-                initialValue: condition['type'] ?? 'sensor',
-                decoration: InputDecoration(
-                  labelText: 'Condition Type',
-                  labelStyle: TextStyle(
-                    color: Colors.indigo.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.indigo.shade300),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.indigo.shade300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide:
-                        BorderSide(color: Colors.indigo.shade600, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(
-                    Icons.category,
-                    color: Colors.indigo.shade400,
-                    size: 20,
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'sensor',
-                    child: Text('Sensor', style: TextStyle(fontSize: 14)),
-                  ),
-                  DropdownMenuItem(
-                    value: 'time',
-                    child: Text('Time', style: TextStyle(fontSize: 14)),
-                  ),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    condition['type'] = value!;
-                    if (value == 'time') {
-                      condition.remove('device_id');
-                      condition.remove('key');
-                      condition.remove('min_change');
-                      condition['value'] = condition['value'] ?? '12:00';
-                    } else if (value == 'sensor') {
-                      condition['device_id'] = condition['device_id'] ?? '';
-                      if (condition['key'] == null) {
-                        condition.remove('key');
-                      }
-                      condition['min_change'] = condition['min_change'] ?? 0.1;
-                      condition['value'] = condition['value'] ?? 25;
-                    }
-                    _notifyChange();
-                  });
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Condition-specific fields
-            if (condition['type'] == 'sensor') ...[
-              // Device selection with trash icon
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: _getValidDeviceId(
-                          condition['device_id']?.toString(), sensorDevices),
-                      hint: const Text('Select device',
-                          style: TextStyle(color: Colors.grey)),
-                      decoration: InputDecoration(
-                        labelText: 'Device',
-                        labelStyle: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.green.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.green.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: Colors.green.shade600, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: Icon(
-                          Icons.devices,
-                          color: Colors.green.shade400,
-                          size: 20,
-                        ),
+            // Condition type with trash icon
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: condition['type'] ?? 'sensor',
+                    decoration: InputDecoration(
+                      labelText: 'Condition Type',
+                      labelStyle: TextStyle(
+                        color: Colors.indigo.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
-                      items: sensorDevices.isEmpty
-                          ? [
-                              const DropdownMenuItem<String>(
-                                value: '',
-                                child: Text('No available devices',
-                                    style: TextStyle(color: Colors.grey)),
-                              ),
-                            ]
-                          : sensorDevices.map((device) {
-                              return DropdownMenuItem<String>(
-                                value: device.id,
-                                child: Text(
-                                  device.name,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              );
-                            }).toList(),
-                      onChanged: sensorDevices.isEmpty
-                          ? null
-                          : (value) {
-                              setState(() {
-                                condition['device_id'] = value ?? '';
-                                condition.remove('key');
-                                _notifyChange();
-                              });
-                            },
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.indigo.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.indigo.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            BorderSide(color: Colors.indigo.shade600, width: 2),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: Icon(
+                        Icons.category,
+                        color: Colors.indigo.shade400,
+                        size: 20,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                    onPressed: () {
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'sensor',
+                        child: Text('Sensor', style: TextStyle(fontSize: 14)),
+                      ),
+                      DropdownMenuItem(
+                        value: 'time',
+                        child: Text('Time', style: TextStyle(fontSize: 14)),
+                      ),
+                    ],
+                    onChanged: (value) {
                       setState(() {
-                        final newChildren = [...siblings];
-                        newChildren.removeAt(index);
-                        if (newChildren.isEmpty) {
-                          newChildren.add(_createEmptyCondition());
-                        }
-                        // Update the parent's children
-                        final parentGroup = conditions;
-                        if (parentGroup['children'] == siblings) {
-                          parentGroup['children'] = newChildren;
-                        } else {
-                          // Find the parent group that contains these siblings
-                          _findAndUpdateParent(
-                              parentGroup, siblings, newChildren);
+                        condition['type'] = value!;
+                        if (value == 'time') {
+                          condition.remove('device_id');
+                          condition.remove('key');
+                          condition.remove('min_change');
+                          condition['value'] = condition['value'] ?? '12:00';
+                        } else if (value == 'sensor') {
+                          condition['device_id'] = condition['device_id'] ?? '';
+                          if (condition['key'] == null) {
+                            condition.remove('key');
+                          }
+                          condition['min_change'] = condition['min_change'] ?? 0.1;
+                          condition['value'] = condition['value'] ?? 25;
                         }
                         _notifyChange();
                       });
                     },
                   ),
-                ],
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      final newChildren = [...siblings];
+                      newChildren.removeAt(index);
+                      if (newChildren.isEmpty) {
+                        newChildren.add(_createEmptyCondition());
+                      }
+                      // Update the parent's children
+                      final parentGroup = conditions;
+                      if (parentGroup['children'] == siblings) {
+                        parentGroup['children'] = newChildren;
+                      } else {
+                        // Find the parent group that contains these siblings
+                        _findAndUpdateParent(parentGroup, siblings, newChildren);
+                      }
+                      _notifyChange();
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Condition-specific fields
+            if (condition['type'] == 'sensor') ...[
+              // Device selection
+              DropdownButtonFormField<String>(
+                initialValue: _getValidDeviceId(
+                    condition['device_id']?.toString(), sensorDevices),
+                hint: const Text('Select device',
+                    style: TextStyle(color: Colors.grey)),
+                decoration: InputDecoration(
+                  labelText: 'Device',
+                  labelStyle: TextStyle(
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.green.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.green.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                        BorderSide(color: Colors.green.shade600, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(
+                    Icons.devices,
+                    color: Colors.green.shade400,
+                    size: 20,
+                  ),
+                ),
+                items: sensorDevices.isEmpty
+                    ? [
+                        const DropdownMenuItem<String>(
+                          value: '',
+                          child: Text('No available devices',
+                              style: TextStyle(color: Colors.grey)),
+                        ),
+                      ]
+                    : sensorDevices.map((device) {
+                        return DropdownMenuItem<String>(
+                          value: device.id,
+                          child: Text(
+                            device.name,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList(),
+                onChanged: sensorDevices.isEmpty
+                    ? null
+                    : (value) {
+                        setState(() {
+                          condition['device_id'] = value ?? '';
+                          condition.remove('key');
+                          _notifyChange();
+                        });
+                      },
               ),
               const SizedBox(height: 16),
 
