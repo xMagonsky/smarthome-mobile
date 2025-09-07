@@ -36,8 +36,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
       'action': 'set_state',
       'params': {'on': false},
       'device_id': '',
-  // UI-only field; stripped before emitting from _notifyChange
-  'selected_state_key': null,
+  // no UI-only fields stored persistently
     };
   }
 
@@ -192,15 +191,9 @@ class _ActionBuilderState extends State<ActionBuilder> {
                         .where((e) => e.value is bool)
                         .map((e) => e.key)
                         .toList();
-                    String? selectedKey = action['selected_state_key'];
-                    if (selectedKey == null || !boolKeys.contains(selectedKey)) {
-                      if (boolKeys.contains('on')) {
-                        selectedKey = 'on';
-                      } else {
-                        selectedKey = boolKeys.isNotEmpty ? boolKeys.first : null;
-                      }
-                    }
-                    action['selected_state_key'] = selectedKey;
+                    final String? selectedKey = boolKeys.contains('on')
+                        ? 'on'
+                        : (boolKeys.isNotEmpty ? boolKeys.first : null);
                     if (selectedKey != null) {
                       final current = (dev.state[selectedKey] as bool?) ?? false;
                       action['params'] = {selectedKey: current};
@@ -213,7 +206,7 @@ class _ActionBuilderState extends State<ActionBuilder> {
         ),
         if (deviceSelected && selectedDevice != null) ...[
           const SizedBox(height: 12),
-          // Styled container similar to conditions, with state picker and switch
+          // Styled container similar to conditions, with multiple state pickers and switches
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -233,109 +226,192 @@ class _ActionBuilderState extends State<ActionBuilder> {
                 );
               }
 
-              final keys = boolEntries.map((e) => e.key).toList();
-              String? selectedKey = action['selected_state_key'] as String?;
-              if (selectedKey == null || !keys.contains(selectedKey)) {
-                selectedKey = keys.contains('on') ? 'on' : keys.first;
-                action['selected_state_key'] = selectedKey;
-              }
-              final bool currentDeviceValue =
-                  (selectedDevice.state[selectedKey] as bool?) ?? false;
-              final bool selectedValue = (action['params']?[selectedKey]
-                      as bool?) ??
-                  currentDeviceValue;
+              // Keep only boolean params for this device
+              final keysAll = boolEntries.map((e) => e.key).toList();
+              final params = (action['params'] as Map<String, dynamic>?) ??
+                  <String, dynamic>{};
+              // Remove params not in available keys
+              params.keys
+                  .where((k) => !keysAll.contains(k))
+                  .toList()
+                  .forEach(params.remove);
+              action['params'] = params;
 
-              return Row(
+              // Ensure at least one key is selected
+              if (params.isEmpty) {
+                final defaultKey =
+                    keysAll.contains('on') ? 'on' : keysAll.first;
+                params[defaultKey] =
+                    (selectedDevice.state[defaultKey] as bool?) ?? false;
+              }
+
+              final selectedKeys = params.keys.toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: DropdownButtonFormField<String>(
-                      initialValue: selectedKey,
-                      decoration: InputDecoration(
-                        labelText: 'State',
-                        labelStyle: TextStyle(
-                          color: Colors.purple.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                              BorderSide(color: Colors.purple.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                              BorderSide(color: Colors.purple.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: Colors.purple.shade600, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: Icon(
-                          Icons.toggle_on,
-                          color: Colors.purple.shade400,
-                        ),
-                      ),
-                      items: keys
-                          .map(
-                            (k) => DropdownMenuItem<String>(
-                              value: k,
-                              child: Text(
-                                k.replaceAll('_', ' ').toUpperCase(),
-                                style: const TextStyle(fontSize: 14),
+                  ...selectedKeys.asMap().entries.map((entry) {
+                    final rowIndex = entry.key;
+                    final currentKey = entry.value;
+                    final currentValue = (params[currentKey] as bool?) ??
+                        ((selectedDevice!.state[currentKey] as bool?) ??
+                            false);
+
+                    // Keys available for this row: ensure uniqueness and include current key
+                    final otherSelected = Set<String>.from(selectedKeys)
+                      ..remove(currentKey);
+                    final availableForRow = <String>{
+                      currentKey,
+                      ...keysAll.where((k) => !otherSelected.contains(k)),
+                    }.toList();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: DropdownButtonFormField<String>(
+                              key: ValueKey('state_key_${rowIndex}_$currentKey'),
+                              initialValue: currentKey,
+                              decoration: InputDecoration(
+                                labelText: 'State',
+                                labelStyle: TextStyle(
+                                  color: Colors.purple.shade700,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: Colors.purple.shade300),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: Colors.purple.shade300),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                      color: Colors.purple.shade600, width: 2),
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                prefixIcon: Icon(
+                                  Icons.toggle_on,
+                                  color: Colors.purple.shade400,
+                                ),
+                              ),
+                              items: availableForRow
+                                  .map(
+                                    (k) => DropdownMenuItem<String>(
+                                      value: k,
+                                      child: Text(
+                                        k
+                                            .replaceAll('_', ' ')
+                                            .toUpperCase(),
+                                        style:
+                                            const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (k) {
+                                if (k == null || k == currentKey) return;
+                                setState(() {
+                                  final oldVal = params[currentKey] as bool? ??
+                                      ((selectedDevice!.state[currentKey]
+                                              as bool?) ??
+                                          false);
+                                  params.remove(currentKey);
+                                  params[k] = (selectedDevice!.state[k]
+                                              as bool?) ??
+                                          oldVal;
+                                  action['params'] = params;
+                                  _notifyChange();
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.purple.shade200),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Value',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14)),
+                                  Switch.adaptive(
+                                    value: currentValue,
+                                    onChanged: (v) {
+                                      setState(() {
+                                        params[currentKey] = v;
+                                        action['params'] = params;
+                                        _notifyChange();
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                          .toList(),
-                      onChanged: (k) {
-                        if (k == null) return;
-                        setState(() {
-                          action['selected_state_key'] = k;
-                          final bool deviceVal =
-                              (selectedDevice!.state[k] as bool?) ?? false;
-                          action['params'] = {k: deviceVal};
-                          _notifyChange();
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.purple.shade200),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Value',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 14)),
-                          Switch.adaptive(
-                            value: selectedValue,
-                            onChanged: (v) {
-                              setState(() {
-                                final k = action['selected_state_key']
-                                    as String?;
-                                if (k != null) {
-                                  action['params'] = {k: v};
-                                  _notifyChange();
-                                }
-                              });
-                            },
                           ),
+                          if (selectedKeys.length > 1) ...[
+                            const SizedBox(width: 8),
+                            IconButton(
+                              tooltip: 'Remove state',
+                              onPressed: () {
+                                setState(() {
+                                  params.remove(currentKey);
+                                  action['params'] = params;
+                                  _notifyChange();
+                                });
+                              },
+                              icon: const Icon(Icons.remove_circle,
+                                  color: Colors.redAccent),
+                            ),
+                          ],
                         ],
                       ),
+                    );
+                  }).toList(),
+                  const SizedBox(height: 4),
+                  // Add state button if any remaining keys available
+                  if (keysAll
+                      .any((k) => !(action['params'] as Map).keys.contains(k)))
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add state'),
+                        onPressed: () {
+                          setState(() {
+                            final used =
+                                Set<String>.from((action['params'] as Map)
+                                    .keys
+                                    .cast<String>());
+                            final nextKey = keysAll
+                                .firstWhere((k) => !used.contains(k));
+                            params[nextKey] =
+                                (selectedDevice!.state[nextKey] as bool?) ??
+                                    false;
+                            action['params'] = params;
+                            _notifyChange();
+                          });
+                        },
+                      ),
                     ),
-                  ),
                 ],
               );
             }),
@@ -354,17 +430,20 @@ class _ActionBuilderState extends State<ActionBuilder> {
         'action': a['action'] ?? 'set_state',
         'device_id': a['device_id'],
       };
-      final selectedKey = a['selected_state_key'] as String?;
-      final params = a['params'] as Map<String, dynamic>?;
-      if (selectedKey != null && params != null && params.containsKey(selectedKey)) {
-        sanitized['params'] = {selectedKey: params[selectedKey]};
-      } else if (params != null && params.isNotEmpty) {
-        // fallback: copy the first entry only
-        final first = params.entries.first;
-        sanitized['params'] = {first.key: first.value};
+      final params = (a['params'] as Map<String, dynamic>?);
+      if (params != null && params.isNotEmpty) {
+        // Keep only boolean values
+        final filtered = <String, dynamic>{};
+        params.forEach((k, v) {
+          if (v is bool) filtered[k] = v;
+        });
+        sanitized['params'] =
+            filtered.isNotEmpty ? filtered : <String, dynamic>{'on': true};
       } else {
         sanitized['params'] = {'on': true};
       }
+      // strip any UI-only artifacts if they somehow exist
+      (sanitized..remove('selected_state_key'));
       return sanitized;
     }).toList();
 
