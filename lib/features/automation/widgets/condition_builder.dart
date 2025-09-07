@@ -419,8 +419,9 @@ class _ConditionBuilderState extends State<ConditionBuilder> {
                           items: const [
                             DropdownMenuItem(value: '>', child: Text('>')),
                             DropdownMenuItem(value: '<', child: Text('<')),
-                            DropdownMenuItem(value: '>=', child: Text('≥')),
-                            DropdownMenuItem(value: '<=', child: Text('≤')),
+                            // ;)
+                            // DropdownMenuItem(value: '>=', child: Text('≥')),
+                            // DropdownMenuItem(value: '<=', child: Text('≤')),
                             DropdownMenuItem(value: '==', child: Text('=')),
                             DropdownMenuItem(value: '!=', child: Text('≠')),
                           ],
