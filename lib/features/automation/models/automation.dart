@@ -34,9 +34,9 @@ class Trigger {
 class Condition {
   final String type; // 'device_state', 'time_range', 'sensor_value', 'weather'
   final String deviceId;
-  final String sensorType; // np. 'temperature', 'humidity'
+  final String sensorType; // e.g. 'temperature', 'humidity'
   final String operator; // '==', '!=', '>', '<', '>=', '<='
-  final dynamic value; // może być string, number, bool
+  final dynamic value; // can be string, number, bool
   final String description;
 
   Condition({
@@ -54,9 +54,9 @@ class AutomationAction {
       type; // 'device_toggle', 'device_set_value', 'notification', 'scene', 'delay'
   final String deviceId;
   final dynamic
-      value; // true/false dla toggle, wartość dla set_value, tekst dla notification
+      value; // true/false for toggle, value for set_value, text for notification
   final String description;
-  final int? delaySeconds; // dla akcji delay
+  final int? delaySeconds; // for delay actions
 
   AutomationAction({
     required this.type,

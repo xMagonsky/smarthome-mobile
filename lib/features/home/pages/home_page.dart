@@ -12,38 +12,38 @@ class HomePage extends StatelessWidget {
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return 'Dzień dobry!';
+      return 'Good morning!';
     } else if (hour < 18) {
-      return 'Miłego popołudnia!';
+      return 'Good afternoon!';
     } else {
-      return 'Dobry wieczór!';
+      return 'Good evening!';
     }
   }
 
   String _getFormattedDateTime() {
     final now = DateTime.now();
     final weekdays = [
-      'Poniedziałek',
-      'Wtorek',
-      'Środa',
-      'Czwartek',
-      'Piątek',
-      'Sobota',
-      'Niedziela'
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
     ];
     final months = [
-      'stycznia',
-      'lutego',
-      'marca',
-      'kwietnia',
-      'maja',
-      'czerwca',
-      'lipca',
-      'sierpnia',
-      'września',
-      'października',
-      'listopada',
-      'grudnia'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
 
     final weekday = weekdays[now.weekday - 1];
@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
     final deviceProvider = Provider.of<DeviceProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
-    final isVerySmall = screenWidth < 360; // Dla bardzo małych ekranów
+    final isVerySmall = screenWidth < 360; // For very small screens
 
     return Scaffold(
       body: Container(
@@ -178,7 +178,7 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Witaj w Twoim Inteligentnym Domu!',
+            'Welcome to Your Smart Home!',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -200,7 +200,7 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Mój Dom',
+                'My Home',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: Theme.of(context).primaryColor,
@@ -221,7 +221,7 @@ class HomePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Przegląd',
+            'Overview',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -232,7 +232,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: StatsCard(
-                        title: 'Urządzenia Online',
+                        title: 'Online Devices',
                         value: '${deviceProvider.onlineDevicesCount}',
                         icon: Icons.wifi,
                         color: Colors.green,
@@ -241,7 +241,7 @@ class HomePage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: StatsCard(
-                        title: 'Urządzenia Offline',
+                        title: 'Offline Devices',
                         value: '${deviceProvider.offlineDevicesCount}',
                         icon: Icons.wifi_off,
                         color: Colors.red,
@@ -251,9 +251,9 @@ class HomePage extends StatelessWidget {
                     Expanded(
                       child: StatsCard(
                         title: deviceProvider.allDevicesOk
-                            ? 'Wszystko OK'
-                            : 'Nie wszystkie urządzenia działają',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
+                            ? 'Everything OK'
+                            : 'Not all devices working',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
                         icon: deviceProvider.allDevicesOk
                             ? Icons.check_circle
                             : Icons.warning,
@@ -294,9 +294,9 @@ class HomePage extends StatelessWidget {
                       width: double.infinity,
                       child: StatsCard(
                         title: deviceProvider.allDevicesOk
-                            ? 'Wszystko OK'
-                            : 'Nie wszystkie urządzenia działają',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
+                            ? 'Everything OK'
+                            : 'Not all devices working',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
                         icon: deviceProvider.allDevicesOk
                             ? Icons.check_circle
                             : Icons.warning,
@@ -336,7 +336,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Brak urządzeń',
+              'You have no devices yet',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w600,
@@ -344,7 +344,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Dodaj swoje pierwsze urządzenie używając przycisku + poniżej',
+              'Add your first device using the + button below',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.grey.shade500,
                   ),
@@ -404,7 +404,7 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Moje Urządzenia',
+                  'My Devices',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Colors.indigo.shade800,
@@ -412,7 +412,7 @@ class HomePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${deviceProvider.devices.length} ${deviceProvider.devices.length == 1 ? 'urządzenie' : 'urządzeń'}',
+                  '${deviceProvider.devices.length} ${deviceProvider.devices.length == 1 ? 'device' : 'devices'}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.indigo.shade600,
                       ),

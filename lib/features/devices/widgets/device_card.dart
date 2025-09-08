@@ -178,7 +178,7 @@ class _DeviceCardState extends State<DeviceCard>
               Row(
                 children: [
                   Text(
-                    widget.device.isOn ? 'Włączone' : 'Wyłączone',
+                    widget.device.isOn ? 'On' : 'Off',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: widget.device.isOnline
                               ? (widget.device.isOn
@@ -299,7 +299,7 @@ class _DeviceCardState extends State<DeviceCard>
         border: Border.all(color: Colors.red.shade100),
       ),
       child: Text(
-        'Urządzenie offline',
+        'Device offline',
         style: TextStyle(
           fontSize: 11,
           color: Colors.red.shade600,
