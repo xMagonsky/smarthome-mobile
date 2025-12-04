@@ -92,7 +92,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
         actions: [
           if (widget.automation != null)
             IconButton(
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete, size: 20),
               onPressed: () => _deleteAutomation(),
             ),
         ],
@@ -110,7 +110,7 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                   decoration: const InputDecoration(
                     labelText: 'Automation Name',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.label),
+                    prefixIcon: Icon(Icons.label, size: 20),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {

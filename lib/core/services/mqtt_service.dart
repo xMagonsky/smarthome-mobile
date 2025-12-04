@@ -36,7 +36,8 @@ class MqttService {
 
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage>> c) {
       final MqttPublishMessage message = c[0].payload as MqttPublishMessage;
-      final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
+      final payload =
+          MqttPublishPayload.bytesToStringAsString(message.payload.message);
       final topic = c[0].topic;
 
       print('Received message: $payload from topic: $topic');
@@ -142,7 +143,8 @@ class MqttService {
   }
 
   // Publish a command payload to {topicBase}/commands as JSON
-  Future<void> publishCommand(String topicBase, Map<String, dynamic> payload) async {
+  Future<void> publishCommand(
+      String topicBase, Map<String, dynamic> payload) async {
     final base = _normalizeBase(topicBase);
     final topic = '$base/commands';
     try {

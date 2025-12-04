@@ -56,7 +56,8 @@ class ApiService {
           throw const FormatException('Invalid /users/me response format');
         }
       } else {
-        throw HttpException('Failed to fetch current user: ${response.statusCode}');
+        throw HttpException(
+            'Failed to fetch current user: ${response.statusCode}');
       }
     } catch (e) {
       _logger.e('Error fetching current user: $e');

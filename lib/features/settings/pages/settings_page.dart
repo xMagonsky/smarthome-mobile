@@ -94,7 +94,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         padding: const EdgeInsets.only(top: 4.0),
                         child: Text(
                           settingsProvider.error!,
-                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                          style:
+                              const TextStyle(color: Colors.red, fontSize: 12),
                         ),
                       ),
                   ],
@@ -267,7 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void dispose() {
     if (_settingsListener != null) {
-  _settingsProvider.removeListener(_settingsListener!);
+      _settingsProvider.removeListener(_settingsListener!);
     }
     _nameController.dispose();
     _emailController.dispose();

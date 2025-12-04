@@ -87,7 +87,7 @@ class _DeviceCardState extends State<DeviceCard>
                             ],
                           ),
                     border: Border.all(
-                      color: widget.device.isOnline 
+                      color: widget.device.isOnline
                           ? Colors.blue.shade200.withValues(alpha: 0.5)
                           : Colors.grey.shade300,
                       width: 1,
@@ -108,7 +108,7 @@ class _DeviceCardState extends State<DeviceCard>
 
   Widget _buildCardContent(
       BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
-  if (widget.device.type == 'sensor' || widget.device.type == 'light') {
+    if (widget.device.type == 'sensor' || widget.device.type == 'light') {
       return _buildSensorCard(deviceProvider, isTablet);
     } else {
       return _buildDeviceCard(deviceProvider, isTablet);
@@ -178,7 +178,7 @@ class _DeviceCardState extends State<DeviceCard>
               Row(
                 children: [
                   Text(
-                    widget.device.isOn ? 'Włączone' : 'Wyłączone',
+                    widget.device.isOn ? 'On' : 'Off',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: widget.device.isOnline
                               ? (widget.device.isOn
@@ -299,7 +299,7 @@ class _DeviceCardState extends State<DeviceCard>
         border: Border.all(color: Colors.red.shade100),
       ),
       child: Text(
-        'Urządzenie offline',
+        'Device offline',
         style: TextStyle(
           fontSize: 11,
           color: Colors.red.shade600,

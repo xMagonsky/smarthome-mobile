@@ -12,26 +12,46 @@ class HomePage extends StatelessWidget {
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return 'Dzień dobry!';
+      return 'Good morning!';
     } else if (hour < 18) {
-      return 'Miłego popołudnia!';
+      return 'Good afternoon!';
     } else {
-      return 'Dobry wieczór!';
+      return 'Good evening!';
     }
   }
 
   String _getFormattedDateTime() {
     final now = DateTime.now();
-    final weekdays = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
-    final months = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 
-                   'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
-    
+    final weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    final months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+
     final weekday = weekdays[now.weekday - 1];
     final day = now.day;
     final month = months[now.month - 1];
     final hour = now.hour.toString().padLeft(2, '0');
     final minute = now.minute.toString().padLeft(2, '0');
-    
+
     return '$weekday, $day $month • $hour:$minute';
   }
 
@@ -40,6 +60,7 @@ class HomePage extends StatelessWidget {
     final deviceProvider = Provider.of<DeviceProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
+    final isVerySmall = screenWidth < 360; // For very small screens
 
     return Scaffold(
       body: Container(
@@ -64,8 +85,8 @@ class HomePage extends StatelessWidget {
                 title: Text(
                   'Smart Home',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 centerTitle: true,
               ),
@@ -82,7 +103,8 @@ class HomePage extends StatelessWidget {
               child: _buildWelcomeBanner(context),
             ),
             SliverToBoxAdapter(
-              child: _buildStatsSection(context, deviceProvider, isTablet),
+              child: _buildStatsSection(
+                  context, deviceProvider, isTablet, isVerySmall),
             ),
             if (deviceProvider.devices.isEmpty)
               SliverToBoxAdapter(
@@ -150,23 +172,23 @@ class HomePage extends StatelessWidget {
           Text(
             _getGreeting(),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Witaj w Twoim Inteligentnym Domu!',
+            'Welcome to Your Smart Home!',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+                  color: Colors.grey[600],
+                ),
           ),
           const SizedBox(height: 8),
           Text(
             _getFormattedDateTime(),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[500],
-            ),
+                  color: Colors.grey[500],
+                ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -178,11 +200,11 @@ class HomePage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Mój Dom',
+                'My Home',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).primaryColor,
-                ),
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).primaryColor,
+                    ),
               ),
             ],
           ),
@@ -191,17 +213,18 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
+  Widget _buildStatsSection(BuildContext context, DeviceProvider deviceProvider,
+      bool isTablet, bool isVerySmall) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Przegląd',
+            'Overview',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 12),
           isTablet
@@ -209,7 +232,7 @@ class HomePage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: StatsCard(
-                        title: 'Urządzenia Online',
+                        title: 'Online Devices',
                         value: '${deviceProvider.onlineDevicesCount}',
                         icon: Icons.wifi,
                         color: Colors.green,
@@ -218,7 +241,7 @@ class HomePage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: StatsCard(
-                        title: 'Urządzenia Offline',
+                        title: 'Offline Devices',
                         value: '${deviceProvider.offlineDevicesCount}',
                         icon: Icons.wifi_off,
                         color: Colors.red,
@@ -227,10 +250,16 @@ class HomePage extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: StatsCard(
-                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Nie wszystkie urządzenia działają',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
-                        icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
-                        color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+                        title: deviceProvider.allDevicesOk
+                            ? 'Everything OK'
+                            : 'Not all devices working',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
+                        icon: deviceProvider.allDevicesOk
+                            ? Icons.check_circle
+                            : Icons.warning,
+                        color: deviceProvider.allDevicesOk
+                            ? Colors.green
+                            : Colors.orange,
                       ),
                     ),
                   ],
@@ -241,19 +270,21 @@ class HomePage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: StatsCard(
-                            title: 'Urządzenia Online',
+                            title: 'Online',
                             value: '${deviceProvider.onlineDevicesCount}',
                             icon: Icons.wifi,
                             color: Colors.green,
+                            isCompact: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: isVerySmall ? 6 : 8),
                         Expanded(
                           child: StatsCard(
-                            title: 'Urządzenia Offline',
+                            title: 'Offline',
                             value: '${deviceProvider.offlineDevicesCount}',
                             icon: Icons.wifi_off,
                             color: Colors.red,
+                            isCompact: true,
                           ),
                         ),
                       ],
@@ -262,10 +293,17 @@ class HomePage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: StatsCard(
-                        title: deviceProvider.allDevicesOk ? 'Wszystko OK' : 'Nie wszystkie urządzenia działają',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problemy',
-                        icon: deviceProvider.allDevicesOk ? Icons.check_circle : Icons.warning,
-                        color: deviceProvider.allDevicesOk ? Colors.green : Colors.orange,
+                        title: deviceProvider.allDevicesOk
+                            ? 'Everything OK'
+                            : 'Not all devices working',
+                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
+                        icon: deviceProvider.allDevicesOk
+                            ? Icons.check_circle
+                            : Icons.warning,
+                        color: deviceProvider.allDevicesOk
+                            ? Colors.green
+                            : Colors.orange,
+                        isCompact: true,
                       ),
                     ),
                   ],
@@ -298,18 +336,18 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Brak urządzeń',
+              'You have no devices yet',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey.shade600,
-                fontWeight: FontWeight.w600,
-              ),
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Dodaj swoje pierwsze urządzenie używając przycisku + poniżej',
+              'Add your first device using the + button below',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade500,
-              ),
+                    color: Colors.grey.shade500,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -318,7 +356,8 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildDevicesHeader(BuildContext context, DeviceProvider deviceProvider) {
+  Widget _buildDevicesHeader(
+      BuildContext context, DeviceProvider deviceProvider) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 24, 16, 16),
       padding: const EdgeInsets.all(20),
@@ -365,18 +404,18 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Moje Urządzenia',
+                  'My Devices',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo.shade800,
-                  ),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo.shade800,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${deviceProvider.devices.length} ${deviceProvider.devices.length == 1 ? 'urządzenie' : 'urządzeń'}',
+                  '${deviceProvider.devices.length} ${deviceProvider.devices.length == 1 ? 'device' : 'devices'}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.indigo.shade600,
-                  ),
+                        color: Colors.indigo.shade600,
+                      ),
                 ),
               ],
             ),

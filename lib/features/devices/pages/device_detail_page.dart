@@ -44,7 +44,8 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
     return Consumer<DeviceProvider>(
       builder: (context, deviceProvider, _) {
         // Get the freshest device instance from provider by id
-        final live = deviceProvider.getDeviceById(widget.device.id) ?? widget.device;
+        final live =
+            deviceProvider.getDeviceById(widget.device.id) ?? widget.device;
 
         return Scaffold(
           appBar: AppBar(
@@ -65,7 +66,8 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
               children: [
                 Text(
                   'Type: ${live.type}',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
                 if (live.type == 'sensor')
@@ -126,7 +128,8 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
         ...live.state.entries.map((entry) {
           final key = entry.key;
           final current = entry.value;
-          final currentAsBool = current == true; // anything else treated as false
+          final currentAsBool =
+              current == true; // anything else treated as false
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 4),
             child: ListTile(
@@ -134,7 +137,8 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
               title: Text(key.toUpperCase()),
               subtitle: current is bool
                   ? null
-                  : Text('Current: $current', style: const TextStyle(color: Colors.grey)),
+                  : Text('Current: $current',
+                      style: const TextStyle(color: Colors.grey)),
               trailing: Switch(
                 value: currentAsBool,
                 onChanged: (val) {
