@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/providers/auth_provider.dart';
 import 'register_screen.dart';
 
@@ -14,6 +15,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  String? _savedToken;
+  String? _savedAgentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPrefs();
+  }
+
+  Future<void> _loadSavedPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _savedToken = prefs.getString('jwt_token');
+      _savedAgentId = prefs.getString('agent_id');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +67,31 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               child: const Text('Don\'t have an account? Register'),
             ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const Text(
+              'Debug: Saved Preferences',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'JWT Token: ${_savedToken ?? "None"}',
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Agent ID: ${_savedAgentId ?? "None"}',
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton.icon(
+              onPressed: _loadSavedPrefs,
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
           ],
         ),
       ),
@@ -67,6 +109,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordController.text,
     );
     print("Login success: $success");
+    
+    // Reload saved preferences after login attempt
+    await _loadSavedPrefs();
+    
     setState(() {
       _isLoading = false;
     });
