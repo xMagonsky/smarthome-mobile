@@ -70,7 +70,15 @@ class MqttService {
     });
   }
 
-  void subscribeToTopics(List<String> topics) {
+  Future<void> subscribeToTopics(List<String> topics) async {
+    if (!isConnected) {
+      print('MQTT not connected; attempting to connect...');
+      await connect();
+      if (!isConnected) {
+        print('Failed to connect to MQTT broker');
+        return;
+      }
+    }
     for (var topic in topics) {
       final base = _normalizeBase(topic);
       final systemTopic = '$base/system';
@@ -80,6 +88,10 @@ class MqttService {
   }
 
   void unsubscribeFromTopics(List<String> topics) {
+    if (!isConnected) {
+      print('MQTT not connected; skipping unsubscribe');
+      return;
+    }
     for (var topic in topics) {
       final base = _normalizeBase(topic);
       final systemTopic = '$base/system';
@@ -89,13 +101,17 @@ class MqttService {
   }
 
   // Per-device state topic management (subscribe when opening detail page)
-  void subscribeToStateTopic(String topicBase) {
+  Future<void> subscribeToStateTopic(String topicBase) async {
     final base = _normalizeBase(topicBase);
     final stateTopic = '$base/state';
     _stateSubscriptions.add(base);
     if (!isConnected) {
-      print('MQTT not connected; cannot subscribe to $stateTopic now');
-      return;
+      print('MQTT not connected; attempting to connect...');
+      await connect();
+      if (!isConnected) {
+        print('Failed to connect; cannot subscribe to $stateTopic');
+        return;
+      }
     }
     print('Subscribing to $stateTopic');
     client.subscribe(stateTopic, MqttQos.atLeastOnce);
