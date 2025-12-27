@@ -26,6 +26,8 @@ class ApiService {
     _agentId = agentId;
   }
 
+  bool get isRemoteMode => _useRemote;
+
   Map<String, String> get _headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': '$_token',
@@ -69,6 +71,14 @@ class ApiService {
     return _makeRequest((baseUrl) => http.patch(
       Uri.parse('$baseUrl/devices/$deviceId/setowner'),
       headers: _headers,
+    ));
+  }
+
+  Future<http.Response> sendDeviceCommand(String deviceId, Map<String, dynamic> command) async {
+    return _makeRequest((baseUrl) => http.post(
+      Uri.parse('$baseUrl/devices/$deviceId/command'),
+      headers: _headers,
+      body: jsonEncode(command),
     ));
   }
 

@@ -111,16 +111,25 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  void toggleDevice(String id, bool isOn) {
+  void toggleDevice(String id, bool isOn) async {
     final index = devices.indexWhere((d) => d.id == id);
     if (index != -1) {
       final updatedState = Map<String, dynamic>.from(devices[index].state);
       updatedState['on'] = isOn;
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
-      // Send MQTT command if topic known
-      final topicBase = devices[index].mqttTopic;
-      _mqttService.publishCommand(topicBase, {'on': isOn});
+      
+      // Use HTTP in remote mode, MQTT in local mode
+      if (_apiService.isRemoteMode) {
+        try {
+          await _apiService.sendDeviceCommand(devices[index].id, {'on': isOn});
+        } catch (e) {
+          print('Failed to send HTTP command: $e');
+        }
+      } else {
+        final topicBase = devices[index].mqttTopic;
+        _mqttService.publishCommand(topicBase, {'on': isOn});
+      }
     }
   }
 
@@ -151,7 +160,7 @@ class DeviceProvider extends ChangeNotifier {
   }
 
   // Publish a boolean command for a specific state entry, e.g., { '<entry>': true/false }
-  void publishStateToggle(Device device, String stateKey, bool value) {
+  void publishStateToggle(Device device, String stateKey, bool value) async {
     // Optimistic UI update
     final index = devices.indexWhere((d) => d.id == device.id);
     if (index != -1) {
@@ -160,6 +169,16 @@ class DeviceProvider extends ChangeNotifier {
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
     }
-    _mqttService.publishCommand(device.mqttTopic, {stateKey: value});
+    
+    // Use HTTP in remote mode, MQTT in local mode
+    if (_apiService.isRemoteMode) {
+      try {
+        await _apiService.sendDeviceCommand(device.id, {stateKey: value});
+      } catch (e) {
+        print('Failed to send HTTP command: $e');
+      }
+    } else {
+      _mqttService.publishCommand(device.mqttTopic, {stateKey: value});
+    }
   }
 }
