@@ -49,12 +49,15 @@ class ApiService {
       try {
         final response = await request(AppConstants.remoteApiBaseUrl);
         if (response.statusCode >= 400) {
-          _logger.e('Remote server returned error ${response.statusCode}. Agent ID: ${_agentId ?? "not set"}. Response: ${response.body}');
-          print('Remote server error ${response.statusCode}. Agent ID used: ${_agentId ?? "not set"}. Response: ${response.body}');
+          _logger.e(
+              'Remote server returned error ${response.statusCode}. Agent ID: ${_agentId ?? "not set"}. Response: ${response.body}');
+          print(
+              'Remote server error ${response.statusCode}. Agent ID used: ${_agentId ?? "not set"}. Response: ${response.body}');
         }
         return response;
       } catch (remoteError) {
-        _logger.e('Remote connection also failed: $remoteError. Agent ID: ${_agentId ?? "not set"}');
+        _logger.e(
+            'Remote connection also failed: $remoteError. Agent ID: ${_agentId ?? "not set"}');
         rethrow;
       }
     }
@@ -62,24 +65,55 @@ class ApiService {
 
   Future<http.Response> fetchDevices() async {
     return _makeRequest((baseUrl) => http.get(
-      Uri.parse('$baseUrl/devices'),
-      headers: _headers,
-    ));
+          Uri.parse('$baseUrl/devices'),
+          headers: _headers,
+        ));
   }
 
   Future<http.Response> setDeviceOwner(String deviceId) async {
     return _makeRequest((baseUrl) => http.patch(
-      Uri.parse('$baseUrl/devices/$deviceId/setowner'),
-      headers: _headers,
-    ));
+          Uri.parse('$baseUrl/devices/$deviceId/setowner'),
+          headers: _headers,
+        ));
   }
 
-  Future<http.Response> sendDeviceCommand(String deviceId, Map<String, dynamic> command) async {
+  Future<http.Response> fetchPendingDevices() async {
+    return _makeRequest((baseUrl) => http.get(
+          Uri.parse('$baseUrl/devices/pending'),
+          headers: _headers,
+        ));
+  }
+
+  Future<http.Response> acceptDevice(String deviceId) async {
     return _makeRequest((baseUrl) => http.post(
-      Uri.parse('$baseUrl/devices/$deviceId/command'),
-      headers: _headers,
-      body: jsonEncode(command),
-    ));
+          Uri.parse('$baseUrl/devices/$deviceId/accept'),
+          headers: _headers,
+        ));
+  }
+
+  Future<http.Response> sendDeviceCommand(
+      String deviceId, Map<String, dynamic> command) async {
+    return _makeRequest((baseUrl) => http.post(
+          Uri.parse('$baseUrl/devices/$deviceId/command'),
+          headers: _headers,
+          body: jsonEncode(command),
+        ));
+  }
+
+  Future<http.Response> updateDeviceName(
+      String deviceId, String name) async {
+    return _makeRequest((baseUrl) => http.patch(
+          Uri.parse('$baseUrl/devices/$deviceId/name'),
+          headers: _headers,
+          body: jsonEncode({'name': name}),
+        ));
+  }
+
+  Future<http.Response> deleteDevice(String deviceId) async {
+    return _makeRequest((baseUrl) => http.delete(
+          Uri.parse('$baseUrl/devices/$deviceId'),
+          headers: _headers,
+        ));
   }
 
   /// Fetch the currently authenticated user's profile
@@ -87,9 +121,9 @@ class ApiService {
   Future<Map<String, dynamic>> getCurrentUser() async {
     try {
       final response = await _makeRequest((baseUrl) => http.get(
-        Uri.parse('$baseUrl/users/me'),
-        headers: _headers,
-      ));
+            Uri.parse('$baseUrl/users/me'),
+            headers: _headers,
+          ));
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
@@ -112,13 +146,13 @@ class ApiService {
     print("API Service: Attempting login for $username");
     try {
       final response = await _makeRequest((baseUrl) => http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: _headers,
-        body: jsonEncode({
-          'username': username, 
-          'password': password,
-        }),
-      ));
+            Uri.parse('$baseUrl/auth/login'),
+            headers: _headers,
+            body: jsonEncode({
+              'username': username,
+              'password': password,
+            }),
+          ));
       print("API Service: Login response status: ${response.statusCode}");
       return response;
     } catch (e) {
@@ -130,30 +164,30 @@ class ApiService {
   Future<http.Response> register(
       String username, String password, String email) async {
     final response = await _makeRequest((baseUrl) => http.post(
-      Uri.parse('$baseUrl/auth/register'),
-      headers: _headers,
-      body: jsonEncode({
-        'username': username, 
-        'password': password, 
-        'email': email,
-      }),
-    ));
+          Uri.parse('$baseUrl/auth/register'),
+          headers: _headers,
+          body: jsonEncode({
+            'username': username,
+            'password': password,
+            'email': email,
+          }),
+        ));
     return response;
   }
 
   Future<http.Response> fetchAutomationRules() async {
     return _makeRequest((baseUrl) => http.get(
-      Uri.parse('$baseUrl/automations/rules'),
-      headers: _headers,
-    ));
+          Uri.parse('$baseUrl/automations/rules'),
+          headers: _headers,
+        ));
   }
 
   Future<List<Rule>> getAutomations() async {
     try {
       final response = await _makeRequest((baseUrl) => http.get(
-        Uri.parse('$baseUrl/automations/rules'),
-        headers: _headers,
-      ));
+            Uri.parse('$baseUrl/automations/rules'),
+            headers: _headers,
+          ));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
@@ -172,15 +206,15 @@ class ApiService {
       List<Map<String, dynamic>> actions) async {
     try {
       final response = await _makeRequest((baseUrl) => http.post(
-        Uri.parse('$baseUrl/automations/rules'),
-        headers: _headers,
-        body: json.encode({
-          'name': name,
-          'conditions': conditions,
-          'actions': actions,
-          'enabled': true,
-        }),
-      ));
+            Uri.parse('$baseUrl/automations/rules'),
+            headers: _headers,
+            body: json.encode({
+              'name': name,
+              'conditions': conditions,
+              'actions': actions,
+              'enabled': true,
+            }),
+          ));
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return Rule.fromJson(json.decode(response.body));
@@ -201,14 +235,14 @@ class ApiService {
       List<Map<String, dynamic>> actions) async {
     try {
       final response = await _makeRequest((baseUrl) => http.patch(
-        Uri.parse('$baseUrl/automations/rules/$id'),
-        headers: _headers,
-        body: json.encode({
-          'name': name,
-          'conditions': conditions,
-          'actions': actions,
-        }),
-      ));
+            Uri.parse('$baseUrl/automations/rules/$id'),
+            headers: _headers,
+            body: json.encode({
+              'name': name,
+              'conditions': conditions,
+              'actions': actions,
+            }),
+          ));
 
       if (response.statusCode == 200) {
         return Rule.fromJson(json.decode(response.body));
@@ -225,9 +259,9 @@ class ApiService {
   Future<void> deleteAutomation(String id) async {
     try {
       final response = await _makeRequest((baseUrl) => http.delete(
-        Uri.parse('$baseUrl/automations/rules/$id'),
-        headers: _headers,
-      ));
+            Uri.parse('$baseUrl/automations/rules/$id'),
+            headers: _headers,
+          ));
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw HttpException(
@@ -242,10 +276,10 @@ class ApiService {
   Future<void> toggleAutomation(String id, bool enabled) async {
     try {
       final response = await _makeRequest((baseUrl) => http.patch(
-        Uri.parse('$baseUrl/automations/rules/$id'),
-        headers: _headers,
-        body: json.encode({'enabled': enabled}),
-      ));
+            Uri.parse('$baseUrl/automations/rules/$id'),
+            headers: _headers,
+            body: json.encode({'enabled': enabled}),
+          ));
 
       if (response.statusCode != 200) {
         throw HttpException(

@@ -98,9 +98,47 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  void deleteDevice(String id) {
-    devices.removeWhere((d) => d.id == id);
-    notifyListeners();
+  Future<bool> updateDeviceName(String id, String name) async {
+    try {
+      final response = await _apiService.updateDeviceName(id, name);
+      if (response.statusCode == 200) {
+        final index = devices.indexWhere((d) => d.id == id);
+        if (index != -1) {
+          devices[index] = devices[index].copyWith(name: name);
+          notifyListeners();
+        }
+        return true;
+      } else {
+        print('Failed to update device name: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error updating device name: $e');
+      return false;
+    }
+  }
+
+  Future<bool> deleteDevice(String id) async {
+    try {
+      // Unsubscribe from MQTT topic before deletion
+      final device = getDeviceById(id);
+      if (device != null) {
+        _mqttService.unsubscribeFromTopics([device.mqttTopic]);
+      }
+
+      final response = await _apiService.deleteDevice(id);
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        devices.removeWhere((d) => d.id == id);
+        notifyListeners();
+        return true;
+      } else {
+        print('Failed to delete device: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Error deleting device: $e');
+      return false;
+    }
   }
 
   Device? getDeviceById(String id) {
@@ -118,7 +156,7 @@ class DeviceProvider extends ChangeNotifier {
       updatedState['on'] = isOn;
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
-      
+
       // Use HTTP in remote mode, MQTT in local mode
       if (_apiService.isRemoteMode) {
         try {
@@ -169,7 +207,7 @@ class DeviceProvider extends ChangeNotifier {
       devices[index] = devices[index].copyWith(state: updatedState);
       notifyListeners();
     }
-    
+
     // Use HTTP in remote mode, MQTT in local mode
     if (_apiService.isRemoteMode) {
       try {
@@ -179,6 +217,31 @@ class DeviceProvider extends ChangeNotifier {
       }
     } else {
       _mqttService.publishCommand(device.mqttTopic, {stateKey: value});
+    }
+  }
+
+  // Update thermostat temperature
+  void updateThermostatTemperature(Device device, double temperature) async {
+    // Optimistic UI update
+    final index = devices.indexWhere((d) => d.id == device.id);
+    if (index != -1) {
+      final updatedState = Map<String, dynamic>.from(devices[index].state);
+      updatedState['temperature'] = temperature;
+      devices[index] = devices[index].copyWith(state: updatedState);
+      notifyListeners();
+    }
+
+    // Use HTTP in remote mode, MQTT in local mode
+    if (_apiService.isRemoteMode) {
+      try {
+        await _apiService
+            .sendDeviceCommand(device.id, {'temperature': temperature});
+      } catch (e) {
+        print('Failed to send HTTP command: $e');
+      }
+    } else {
+      _mqttService
+          .publishCommand(device.mqttTopic, {'temperature': temperature});
     }
   }
 }

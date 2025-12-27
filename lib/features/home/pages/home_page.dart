@@ -247,21 +247,21 @@ class HomePage extends StatelessWidget {
                         color: Colors.red,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: StatsCard(
-                        title: deviceProvider.allDevicesOk
-                            ? 'Everything OK'
-                            : 'Not all devices working',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
-                        icon: deviceProvider.allDevicesOk
-                            ? Icons.check_circle
-                            : Icons.warning,
-                        color: deviceProvider.allDevicesOk
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                    ),
+                    // const SizedBox(width: 12),
+                    // Expanded(
+                    //   child: StatsCard(
+                    //     title: deviceProvider.allDevicesOk
+                    //         ? 'Everything OK'
+                    //         : 'Not all devices working',
+                    //     value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
+                    //     icon: deviceProvider.allDevicesOk
+                    //         ? Icons.check_circle
+                    //         : Icons.warning,
+                    //     color: deviceProvider.allDevicesOk
+                    //         ? Colors.green
+                    //         : Colors.orange,
+                    //   ),
+                    // ),
                   ],
                 )
               : Column(
@@ -289,23 +289,23 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: StatsCard(
-                        title: deviceProvider.allDevicesOk
-                            ? 'Everything OK'
-                            : 'Not all devices working',
-                        value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
-                        icon: deviceProvider.allDevicesOk
-                            ? Icons.check_circle
-                            : Icons.warning,
-                        color: deviceProvider.allDevicesOk
-                            ? Colors.green
-                            : Colors.orange,
-                        isCompact: true,
-                      ),
-                    ),
+                    // const SizedBox(height: 12),
+                    // SizedBox(
+                    //   width: double.infinity,
+                    //   child: StatsCard(
+                    //     title: deviceProvider.allDevicesOk
+                    //         ? 'Everything OK'
+                    //         : 'Not all devices working',
+                    //     value: deviceProvider.allDevicesOk ? '✓' : 'Problems',
+                    //     icon: deviceProvider.allDevicesOk
+                    //         ? Icons.check_circle
+                    //         : Icons.warning,
+                    //     color: deviceProvider.allDevicesOk
+                    //         ? Colors.green
+                    //         : Colors.orange,
+                    //     isCompact: true,
+                    //   ),
+                    // ),
                   ],
                 ),
           const SizedBox(height: 16),

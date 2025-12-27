@@ -108,7 +108,9 @@ class _DeviceCardState extends State<DeviceCard>
 
   Widget _buildCardContent(
       BuildContext context, DeviceProvider deviceProvider, bool isTablet) {
-    if (widget.device.type == 'sensor' || widget.device.type == 'light') {
+    if (widget.device.type == 'sensor' ||
+        widget.device.type == 'light' ||
+        widget.device.type == 'thermostat') {
       return _buildSensorCard(deviceProvider, isTablet);
     } else {
       return _buildDeviceCard(deviceProvider, isTablet);
@@ -269,18 +271,43 @@ class _DeviceCardState extends State<DeviceCard>
       spacing: 6,
       runSpacing: 4,
       children: widget.device.state.entries.map((entry) {
+        // Format temperature values nicely for thermostat devices
+        String displayValue = entry.value.toString();
+        if (widget.device.type == 'thermostat' && entry.key == 'temperature') {
+          final temp = (entry.value is num)
+              ? entry.value
+              : double.tryParse(entry.value.toString()) ?? 0;
+          displayValue = '${temp.toStringAsFixed(0)}°C';
+        }
+
+        // Use appropriate color for thermostat
+        final bgColor =
+            widget.device.type == 'thermostat' && entry.key == 'temperature'
+                ? Colors.orange.shade50
+                : Colors.blue.shade50;
+        final borderColor =
+            widget.device.type == 'thermostat' && entry.key == 'temperature'
+                ? Colors.orange.shade100
+                : Colors.blue.shade100;
+        final textColor =
+            widget.device.type == 'thermostat' && entry.key == 'temperature'
+                ? Colors.orange.shade700
+                : Colors.blue.shade700;
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: bgColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.shade100),
+            border: Border.all(color: borderColor),
           ),
           child: Text(
-            '${entry.key}: ${entry.value}',
+            entry.key == 'temperature' && widget.device.type == 'thermostat'
+                ? displayValue
+                : '${entry.key}: $displayValue',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.blue.shade700,
+              color: textColor,
               fontWeight: FontWeight.w500,
             ),
           ),

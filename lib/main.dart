@@ -97,6 +97,7 @@ class _MainAppState extends State<MainApp> {
       child: Builder(
         builder: (context) {
           return MaterialApp(
+            debugShowCheckedModeBanner: false,
             title: 'Smart Home App',
             theme: appTheme,
             home: const AuthWrapper(),
