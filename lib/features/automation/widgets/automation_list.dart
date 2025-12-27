@@ -102,10 +102,10 @@ class AutomationCard extends StatelessWidget {
               style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 2),
-            Text(
-              _buildActionDescription(),
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-            ),
+            // Text(
+            //   _buildActionDescription(),
+            //   style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            // ),
             const SizedBox(height: 4),
           ],
         ),

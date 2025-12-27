@@ -5,7 +5,6 @@ import '../../../core/providers/device_provider.dart';
 import '../models/rule.dart';
 import '../widgets/condition_builder.dart';
 import '../widgets/action_builder.dart';
-import '../widgets/automation_preview.dart';
 
 class AddAutomationPage extends StatefulWidget {
   final Rule? automation;
@@ -142,13 +141,6 @@ class _AddAutomationPageState extends State<AddAutomationPage> {
                     });
                   },
                   devices: deviceProvider.devices,
-                ),
-                const SizedBox(height: 24),
-
-                // Preview
-                AutomationPreviewWidget(
-                  conditions: conditions,
-                  actions: actions,
                 ),
                 const SizedBox(height: 32),
 
