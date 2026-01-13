@@ -163,15 +163,16 @@ class ApiService {
 
   Future<http.Response> register(
       String username, String password, String email) async {
-    final response = await _makeRequest((baseUrl) => http.post(
-          Uri.parse('$baseUrl/auth/register'),
-          headers: _headers,
-          body: jsonEncode({
-            'username': username,
-            'password': password,
-            'email': email,
-          }),
-        ));
+    // Only use local connection for registration
+    final response = await http.post(
+      Uri.parse('${AppConstants.apiBaseUrl}/auth/register'),
+      headers: _headers,
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+        'email': email,
+      }),
+    );
     return response;
   }
 
