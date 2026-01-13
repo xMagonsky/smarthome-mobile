@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/automation_provider.dart';
 import '../widgets/automation_list.dart';
 import 'add_automation_page.dart';
 
@@ -9,6 +11,22 @@ class AutomationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                onPressed: () {
+                  Provider.of<AutomationProvider>(context, listen: false)
+                      .loadAutomations();
+                },
+                icon: const Icon(Icons.refresh),
+                tooltip: 'Refresh',
+              ),
+            ],
+          ),
+        ),
         const Expanded(
           child: AutomationList(),
         ),
